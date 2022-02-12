@@ -6,16 +6,19 @@ use Eloquent as Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Class User
+ * Class Rating
  * @package App\Models
- * @version January 16, 2022, 4:34 pm UTC
+ * @version February 7, 2022, 5:50 pm UTC
  *
+ * @property string $title
+ * @property string $contact
+ * @property integer $is_flag
  */
-class RestaurantDetail extends Model
+class Rating extends Model
 {
     use SoftDeletes;
 
-    public $table = 'restaurant_details';
+    public $table = 'restaurant_rating';
     
 
     protected $dates = ['deleted_at'];
@@ -23,8 +26,10 @@ class RestaurantDetail extends Model
 
 
     public $fillable = [
-        'restaurant_id', 'shop_licence','gst_pan_number' ,'photo'
-        
+        'user_id',
+        'restaurant_id',
+        'rating',
+        'comment'
     ];
 
     /**
@@ -33,7 +38,10 @@ class RestaurantDetail extends Model
      * @var array
      */
     protected $casts = [
-        'photo' => 'string'
+        'user_id' => 'integer',
+        'restaurant_id' => 'integer',
+        'rating' => 'integer',
+        'comment' => 'string'
     ];
 
     /**
@@ -42,12 +50,7 @@ class RestaurantDetail extends Model
      * @var array
      */
     public static $rules = [
-        
     ];
 
-    public function getPhotoAttribute($value)
-{
-    return config('app.url').'/images/'.$value;
-}
-
+    
 }

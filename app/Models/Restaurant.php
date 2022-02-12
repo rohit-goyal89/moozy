@@ -126,4 +126,15 @@ class Restaurant extends Model
         return $this->belongsToMany(Menu::class, 'restaurant_menu');
     }
 
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class, 'restaurant_id');
+    }
+
+    public function avgRating()
+    {
+        return $this->ratings()->avg("rating");
+    }
+
+
 }

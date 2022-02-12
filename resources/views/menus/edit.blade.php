@@ -17,7 +17,7 @@
 
         <div class="card">
 
-            {!! Form::model($menu, ['route' => ['menus.update', $menu->id], 'method' => 'patch']) !!}
+            {!! Form::model($menu, ['route' => ['menus.update', $menu->id], 'method' => 'patch', 'enctype'=>"multipart/form-data"]) !!}
 
             <div class="card-body">
                 <div class="row">

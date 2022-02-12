@@ -3,6 +3,11 @@
     {!! Form::label('title', 'Title:') !!}
     <p>{{ $menu->title }}</p>
 </div>
+<!-- Title Field -->
+<div class="col-sm-12">
+    {!! Form::label('price', 'Price:') !!}
+    <p>{{ $menu->price }}</p>
+</div>
 
 <!-- Description Field -->
 <div class="col-sm-12">

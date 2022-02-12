@@ -66,9 +66,15 @@
         </div>
         <div class="row">
 
-<section class="col-lg-7 connectedSortable" style="display: none;">
+<section class="col-lg-6 connectedSortable">
 
 <div class="card">
+  <div class="card-header border-0">
+<h3 class="card-title">
+<i class="fas fa-map-marker-alt mr-1"></i>
+Sales
+</h3>
+</div>
 <div class="card-body">
  <div class="tab-content p-0">
 
@@ -107,7 +113,7 @@ Visitors
 
 </div>
 <div class="card-body">
-<div id="world-map" style="height: 250px; width: 100%;"></div>
+<div id="world-map" style="height: 150px; width: 100%;"></div>
 </div>
 
 <div class="card-footer bg-transparent">
@@ -146,7 +152,7 @@ Order Graph
 </div>
 </div>
 <div class="card-body">
-<canvas class="chart" id="line-chart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+<canvas class="chart" id="line-chart" style="min-height: 150px; height: 150px; max-height: 150px; max-width: 100%;"></canvas>
 </div>
 
 <div class="card-footer bg-transparent">

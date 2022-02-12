@@ -1,9 +1,28 @@
 <!-- Title Field -->
-<div class="form-group col-sm-6">
+<div class="form-group col-sm-6 required">
     {!! Form::label('title', 'Title:') !!}
     {!! Form::text('title', null, ['class' => 'form-control']) !!}
 </div>
+<!-- Price Field -->
+<div class="form-group col-sm-6 required">
+    {!! Form::label('price', 'Price:') !!}
+    {!! Form::text('price', null, ['class' => 'form-control']) !!}
+</div>
 
+<!-- Menu Prepare Time Field -->
+<div class="form-group col-sm-6 required">
+    {!! Form::label('prepare_time', 'Prepare Time (In Minute):') !!}
+    {!! Form::text('prepare_time', null, ['class' => 'form-control']) !!}
+</div>
+<div class="form-group col-sm-6 required"> 
+    {!! Form::label('photo', 'Menu Photo:',['class'=>'control-label']) !!}
+    {!! Form::file('photo', array('id' => 'photo','class'=>'form-control')) !!}
+    @if(!empty($menu->image))
+    <span>
+        <a href="{{ url('images/'.$menu->image) }}" alt="" target="_blank" title="">View Photo</a>
+    </span>
+    @endif
+</div>
 <!-- Description Field -->
 <div class="form-group col-sm-12 col-lg-12">
     {!! Form::label('description', 'Description:') !!}

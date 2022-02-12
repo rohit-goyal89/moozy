@@ -60,6 +60,13 @@ class MenuController extends AppBaseController
         } else {
             $input['status'] = 0;
         }
+        $imageName = "";
+        if($request->photo) {
+            $imageName = time().'.'.$request->photo->extension();  
+
+            $request->photo->move(public_path('images'), $imageName);
+        }
+        $input['image'] = $imageName;
         $menu = $this->menuRepository->create($input);
 
         Flash::success('Menu saved successfully.');
@@ -131,6 +138,16 @@ class MenuController extends AppBaseController
         } else {
             $input['status'] = 0;
         }
+        $imageName = "";
+        if($request->photo) {
+            $imageName = time().'.'.$request->photo->extension();  
+
+            $request->photo->move(public_path('images'), $imageName);
+            $input['image'] = $imageName;
+        }else {
+            unset($input['image']);
+        }
+        
         $menu = $this->menuRepository->update($input, $id);
 
         Flash::success('Menu updated successfully.');

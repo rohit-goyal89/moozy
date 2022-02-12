@@ -3,7 +3,7 @@
         <thead>
         <tr>
             <th>Title</th>
-        <th>Description</th>
+        <th>Price</th>
         <th>Status</th>
             <th colspan="3">Action</th>
         </tr>
@@ -13,7 +13,7 @@
         @foreach($menus as $menu)
             <tr>
                 <td>{{ $menu->title }}</td>
-                <td>{{ $menu->description }}</td>
+                <td>{{ $menu->price }}</td>
                 <td>
                     @if($menu->status == 1) 
                         Active

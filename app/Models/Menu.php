@@ -27,7 +27,10 @@ class Menu extends Model
 
     public $fillable = [
         'title',
+        'price',
+        'prepare_time',
         'description',
+        'image',
         'status'
     ];
 
@@ -38,7 +41,10 @@ class Menu extends Model
      */
     protected $casts = [
         'title' => 'string',
+        'price' => 'float',
         'description' => 'string',
+        'prepare_time' => 'integer',
+        'image' => 'string',
         'status' => 'integer'
     ];
 
@@ -48,7 +54,9 @@ class Menu extends Model
      * @var array
      */
     public static $rules = [
-        'title' => 'required'
+        'title' => 'required',
+        'price' => 'required',
+        'prepare_time' => 'required',
     ];
 
     

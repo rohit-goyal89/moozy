@@ -37,4 +37,10 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::post('make_default', 'UserController@makeDefaultAddress');
 
     Route::get('support', 'UserController@support');
+    Route::post('cuisine', 'RestaurantController@cuisine');
+    Route::post('nearest_restaurant', 'RestaurantController@nearestRestaurant');
+    Route::post('popular_restaurant', 'RestaurantController@popularRestaurant');
+    Route::post('frequently_restaurant', 'RestaurantController@frequentlyOrderRestaurant');
+     Route::post('restaurant_list', 'RestaurantController@restaurantList');
+    Route::post('menus', 'RestaurantController@topMenu');
 });
