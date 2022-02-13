@@ -9,6 +9,7 @@ use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
 use App\Models\Restaurant;
 use App\Models\RestaurantDetail;
+use App\Models\RestaurantRating;
 use App\Models\Menu;
 use Flash;
 use Response;
@@ -247,5 +248,12 @@ class RestaurantController extends AppBaseController
         Flash::success('Restaurant deleted successfully.');
 
         return redirect(route('restaurants.index'));
+    }
+
+
+    public function ratingAndReview(Request $request)
+    {
+        $rating = RestaurantRating::with(['users', 'restaurants'])->get();
+        return view('users.create');
     }
 }

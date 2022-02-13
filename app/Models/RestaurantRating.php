@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Eloquent as Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use App\User;
 /**
  * Class Rating
  * @package App\Models
@@ -52,5 +52,11 @@ class RestaurantRating extends Model
     public static $rules = [
     ];
 
-    
+    public function users() {
+         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function restaurants() {
+         return $this->belongsTo(Restaurant::class, 'restaurant_id');
+    }
 }

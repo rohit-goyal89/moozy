@@ -119,3 +119,32 @@
     </a>
 </li>
 
+<li class="nav-item">
+    <a href="{{ route('videos.index') }}"
+       class="nav-link {{ Request::is('videos*') ? 'active' : '' }}">
+       <i class="nav-icon fas fa-tachometer-alt"></i>
+        <p>Videos Manager</p>
+    </a>
+</li>
+
+<li class="nav-item has-treeview" >
+   <a href="#" class="nav-link">
+     <i class="nav-icon fas fa-tachometer-alt"></i>
+     <p>
+       Rating and Review Manager
+       <i class="right fas fa-angle-left"></i>
+     </p>
+   </a>
+   <ul class="nav nav-treeview">
+     <li class="nav-item">
+       <a href="{{ route('users.index') }}?role=2" class="nav-link ">
+         <p>Restaurant Rating</p>
+       </a>
+     </li>
+     <li class="nav-item">
+       <a href="{{ route('users.index') }}?role=3" class="nav-link">
+         <p>Driver Rating</p>
+       </a>
+     </li>
+   </ul>
+ </li>

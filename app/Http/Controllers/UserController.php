@@ -9,6 +9,7 @@ use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
 use App\User;
 use App\UserDetail;
+use App\Models\UserRating;
 use Flash;
 use Response;
 use Illuminate\Support\Facades\Validator;
@@ -192,9 +193,7 @@ class UserController extends AppBaseController
         $user->update($input);
         DB::table('model_has_roles')->where('model_id',$id)->delete();
 
-$user->assignRole($request->input('role_id'));
-
-
+        $user->assignRole($request->input('role_id'));
         $imageName = $licenceName = "";
         if($request->photo) {
             $imageName = time().'.'.$request->photo->extension();  
@@ -249,5 +248,11 @@ $user->assignRole($request->input('role_id'));
         Flash::success('User deleted successfully.');
 
         return redirect()->route('users.index', ['role' => $user->role_id]);
+    }
+
+    public function ratingAndReview(Request $request)
+    {
+        $rating = UserRating::with(['users', 'drivers'])->get();
+        return view('users.create');
     }
 }

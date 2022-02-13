@@ -50,7 +50,7 @@ class NotificationController extends AppBaseController
     public function store(Request $request)
     {
         $input = $request->all();
-        return Validator::make($request->all(), [ 
+        $validated = $request->validate([ 
             'title' => 'required', 
             'description' => 'required'
         ]);
@@ -117,7 +117,7 @@ class NotificationController extends AppBaseController
      */
     public function update($id, Request $request)
     {
-        return Validator::make($request->all(), [ 
+         $validated = $request->validate([  
             'title' => 'required', 
             'description' => 'required'
         ]);

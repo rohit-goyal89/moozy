@@ -52,5 +52,12 @@ class UserRating extends Model
     public static $rules = [
     ];
 
+    public function users() {
+         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function drivers() {
+         return $this->belongsTo(User::class, 'driver_id');
+    }
     
 }
