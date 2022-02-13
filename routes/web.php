@@ -37,4 +37,5 @@ Route::group(['middleware' => ['auth']], function() {
     Route::resource('offers', 'OfferController');
     Route::resource('supports', 'SupportController');
     Route::resource('menus', 'MenuController');
+    Route::resource('notifications', 'NotificationController');
 });

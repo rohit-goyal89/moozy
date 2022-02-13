@@ -128,7 +128,7 @@ class Restaurant extends Model
 
     public function ratings()
     {
-        return $this->hasMany(Rating::class, 'restaurant_id');
+        return $this->hasMany(RestaurantRating::class, 'restaurant_id');
     }
 
     public function avgRating()
@@ -136,5 +136,11 @@ class Restaurant extends Model
         return $this->ratings()->avg("rating");
     }
 
-
+     /**
+     * The user favourite restaurant.
+     */
+    public function favouriteRestaurants()
+    {
+        return $this->belongsToMany(User::class, 'user_restaurant');
+    }
 }

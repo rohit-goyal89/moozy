@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Eloquent as Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use App\Category;
 /**
  * Class Menu
  * @package App\Models
@@ -66,6 +66,14 @@ class Menu extends Model
     public function restaurants()
     {
         return $this->belongsToMany(Restaurant::class, 'restaurant_menu');
+    }
+
+    /**
+     * The restaurant that belong to the offer.
+     */
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'menu_category');
     }
 
 }

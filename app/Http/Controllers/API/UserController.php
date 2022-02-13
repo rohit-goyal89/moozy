@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\User; 
 use App\Models\Offer; 
 use App\UserAddress; 
+use App\Notification; 
 use App\Models\Support; 
+use App\Models\UserRating; 
 use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Facades\Password;
 use Validator;
@@ -344,7 +346,6 @@ class UserController extends Controller
             'postcode' => 'required',
             'landmark' => 'required',
         );
-        //dd($input);
         $validator = Validator::make($input, $rules);
         if ($validator->fails()) {
             $response = array("status" => false, "message" => $validator->errors()->first(), "data" => array());
@@ -394,7 +395,6 @@ class UserController extends Controller
             $req['user_id'] = $input['user_id'];
             $req['is_default'] = 0;
             UserAddress::where('user_id', $input['user_id'])->update(['is_default' => 0]);
-           // $user->userAddress()->update($input);
             UserAddress::where('id', $input['id'])->update(['is_default' => $input['is_default']]);
             $userInfo = User::where('id',$input['user_id'])->with(['userAddress', 'userDetail'])->first();
             $response['status'] = true;
@@ -418,5 +418,101 @@ class UserController extends Controller
         $response['data'] =  $support; 
         $response['message'] = "support list";
         return response()->json($response, $this-> successStatus); 
-    } 
+    }
+
+    /** 
+     * update profile api 
+     * 
+     * @return \Illuminate\Http\Response 
+     */ 
+
+    public function updateProfile($userId, Request $request)
+    {
+        $input = $request->all();
+        $rules = array(
+            'user_id' => 'required',
+            'name' => 'required'
+        );
+        $validator = Validator::make($input, $rules);
+
+        if ($validator->fails()) {
+            $response = array("status" => false, "message" => $validator->errors()->first(), "data" => array());
+        } else {
+            User::where('user_id', $userId)->update(['name' => $input['name']]);
+            $userInfo = User::where('id',$userId)->with(['userAddress', 'userDetail'])->first();
+            $response['status'] = true;
+            $response['data'] =  $userInfo; 
+            $response['message'] = "Make default address successfully.";
+        }
+        return response()->json($response, $this-> successStatus);
+    }
+
+
+    /** 
+     * notification api 
+     * 
+     * @return \Illuminate\Http\Response 
+     */ 
+
+    public function notifications() 
+    { 
+        $notification = Notification::get(); 
+        $response['status'] = true;
+        $response['data'] =  $notification; 
+        $response['message'] = "notification list";
+        return response()->json($response, $this-> successStatus); 
+    }
+
+     /**
+     * Add rating and review Driver.
+     *
+     * @return Response
+     */
+    public function addDriverReviewRating(Request $request)
+    {
+        $input = $request->all();
+        $validator = Validator::make($request->all(), [ 
+            'user_id' => 'required', 
+            'driver_id' => 'required',
+            'rating' => 'required',
+        ]);
+        if ($validator->fails()) { 
+            $response['status'] = false;
+            $response['data'] =  ''; 
+            $response['message'] = "please select restaurant.";
+            return response()->json($response, 200);            
+        }
+        $user = User::where('id',$input['user_id'])->first();
+        $user->userDriverRating()->create($input);
+        $userInfo = User::where('id',$input['user_id'])->with(['userDriverRating'])->first();
+        $response['status'] = true;
+        $response['data'] =  $userInfo; 
+        $response['message'] = "You have rated and review driver successfully.";
+        return response()->json($response, $this-> successStatus);
+    }
+
+     /**
+     * user logout api.
+     *
+     * @return Response
+     */
+    public function logout(Request $request)
+    {
+        $input = $request->all();
+        $validator = Validator::make($request->all(), [ 
+            'user_id' => 'required'
+        ]);
+        if ($validator->fails()) { 
+            $response['status'] = false;
+            $response['data'] =  ''; 
+            $response['message'] = "please select user.";
+            return response()->json($response, 200);            
+        }
+
+        User::where('id', $input['user_id'])->update(['device_id' => '']);
+        $response['status'] = true;
+        $response['data'] = ''; 
+        $response['message'] = "You have logged out successfully.";
+        return response()->json($response, $this-> successStatus);
+    }   
 }

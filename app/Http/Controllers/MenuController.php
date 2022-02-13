@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateMenuRequest;
 use App\Repositories\MenuRepository;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
+use App\Category;
 use Flash;
 use Response;
 
@@ -42,7 +43,9 @@ class MenuController extends AppBaseController
      */
     public function create()
     {
-        return view('menus.create');
+        $categories =  Category::where('status',1)->pluck('category','id');
+        $selectedCat = [];
+        return view('menus.create', compact('categories', 'selectedCat'));
     }
 
     /**
@@ -68,7 +71,7 @@ class MenuController extends AppBaseController
         }
         $input['image'] = $imageName;
         $menu = $this->menuRepository->create($input);
-
+        $menu->categories()->attach($input['category']);
         Flash::success('Menu saved successfully.');
 
         return redirect(route('menus.index'));
@@ -110,8 +113,9 @@ class MenuController extends AppBaseController
 
             return redirect(route('menus.index'));
         }
-
-        return view('menus.edit')->with('menu', $menu);
+        $categories =  Category::where('status',1)->pluck('category','id');
+        $selectedCat = $menu->categories()->allRelatedIds();
+        return view('menus.edit', compact('menu', 'categories', 'selectedCat'));
     }
 
     /**
@@ -149,7 +153,7 @@ class MenuController extends AppBaseController
         }
         
         $menu = $this->menuRepository->update($input, $id);
-
+        $menu->categories()->sync($input['category']);
         Flash::success('Menu updated successfully.');
 
         return redirect(route('menus.index'));

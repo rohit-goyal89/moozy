@@ -254,4 +254,10 @@ return [
     ],
     'radius' => 20,
     'limit' => 10,
+    'sort' => [
+        1 => 'Popularity',
+        2 => 'Delivery Time',
+        3 => 'Avg. Price (High To Low)',
+        4 => 'Rating',
+    ],
 ];

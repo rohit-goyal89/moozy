@@ -14,13 +14,6 @@
     {!! Form::label('prepare_time', 'Prepare Time (In Minute):') !!}
     {!! Form::text('prepare_time', null, ['class' => 'form-control']) !!}
 </div>
-
-
-<!-- Menu Field -->
-<div class="form-group col-sm-6 required">
-    {!! Form::label('categories', 'Categories:') !!}
-    {!! Form::select('category[]',$categories , $selectedCat, ['class' => 'form-control js-example-basic-multiple','multiple'=>"multiple"]) !!}
-</div>
 <div class="form-group col-sm-6 required"> 
     {!! Form::label('photo', 'Menu Photo:',['class'=>'control-label']) !!}
     {!! Form::file('photo', array('id' => 'photo','class'=>'form-control')) !!}

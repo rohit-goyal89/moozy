@@ -14,11 +14,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $contact
  * @property integer $is_flag
  */
-class Rating extends Model
+class FavouriteRestaurant extends Model
 {
     use SoftDeletes;
 
-    public $table = 'restaurant_rating';
+    public $table = 'favourite_restaurants';
     
 
     protected $dates = ['deleted_at'];
@@ -28,8 +28,7 @@ class Rating extends Model
     public $fillable = [
         'user_id',
         'restaurant_id',
-        'rating',
-        'comment'
+        'status'
     ];
 
     /**

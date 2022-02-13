@@ -111,3 +111,11 @@
     </a>
 </li>
 
+<li class="nav-item">
+    <a href="{{ route('notifications.index') }}"
+       class="nav-link {{ Request::is('notifications*') ? 'active' : '' }}">
+       <i class="nav-icon fas fa-tachometer-alt"></i>
+        <p>Notifications Manager</p>
+    </a>
+</li>
+

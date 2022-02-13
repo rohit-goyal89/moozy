@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Rule;
+use App\Models\Restaurant;
 
 class User extends Authenticatable
 {
@@ -82,9 +83,17 @@ class User extends Authenticatable
     /**
      * The user favourite restaurant.
      */
-    public function restaurants()
+    public function favouriteRestaurants()
     {
         return $this->belongsToMany(Restaurant::class, 'user_restaurant');
+    }
+
+    public function userRestaurantRating() {
+        return $this->hasMany(Models\RestaurantRating::class, 'user_id');
+    }
+
+    public function userDriverRating() {
+        return $this->hasMany(Models\UserRating::class, 'user_id');
     }
 
 }
