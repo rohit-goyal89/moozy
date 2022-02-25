@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateFaqRequest;
 use App\Repositories\FaqRepository;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 use Flash;
 use Response;
 
@@ -42,7 +43,9 @@ class FaqController extends AppBaseController
      */
     public function create()
     {
-        return view('faqs.create');
+        $roles =  Role::where('id', '!=',1)->pluck('name','id');
+        $roles =  $roles->prepend("select role", '');
+        return view('faqs.create', compact('roles'));
     }
 
     /**
@@ -104,8 +107,9 @@ class FaqController extends AppBaseController
 
             return redirect(route('faqs.index'));
         }
-
-        return view('faqs.edit')->with('faq', $faq);
+        $roles =  Role::where('id', '!=',1)->pluck('name','id');
+        $roles =  $roles->prepend("select role", '');
+        return view('faqs.edit', compact('faq', 'roles'));
     }
 
     /**

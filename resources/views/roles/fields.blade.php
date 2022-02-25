@@ -6,12 +6,21 @@
 
 <!-- Description Field -->
 <div class="form-group col-sm-12 col-lg-12">
-    {!! Form::label('permission', 'Permission:') !!}
+    {!! Form::label('permission', 'Permission:') !!}<br/>
+    <div class="row">
+    	<div class="col-sm-4">
+    <ul style="list-style: none;">
+    	@php $ind = 1;  @endphp
      @foreach($permission as $value)
-                <label>{{ Form::checkbox('permission[]', $value->id, in_array($value->id, $rolePermissions) ? true : false, array('class' => 'name')) }}
-                {{ $value->name }}</label>
-            <br/>
-            @endforeach
-
+        <li>{{ Form::checkbox('permission[]', $value->id, in_array($value->id, $rolePermissions) ? true : false, array('class' => 'name')) }}
+        {{ $value->name }}</li>
+        @if($ind %4 ==0 && $ind>0) 
+    </ul></div><div class="col-sm-4"><ul style="list-style: none;">
+        @endif
+        @php $ind++;  @endphp
+    @endforeach
+</ul>
+</div>
+</div>
 </div>
 

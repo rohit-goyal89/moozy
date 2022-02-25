@@ -10,7 +10,9 @@ use Illuminate\Http\Request;
 use App\Models\Restaurant;
 use App\Models\RestaurantDetail;
 use App\Models\RestaurantRating;
+use App\Models\RestaurantManageTime;
 use App\Models\Menu;
+use App\Category;
 use Flash;
 use Response;
 
@@ -47,8 +49,10 @@ class RestaurantController extends AppBaseController
     public function create()
     {
         $menus =  Menu::where('status',1)->pluck('title','id');
+        $categories =  Category::where('status',1)->pluck('category','id');
         $selectedMenus = [];
-        return view('restaurants.create', compact('menus','selectedMenus'));
+        $selectedCat = [];
+        return view('restaurants.create', compact('menus','selectedMenus', 'categories', 'selectedCat'));
     }
 
     /**
@@ -74,12 +78,22 @@ class RestaurantController extends AppBaseController
           $json = file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyCSq0HU1qQHerls8ZPwugwzfOqHYkFHodA&address='.urlencode($address).'&sensor=false');
 
         $json = json_decode($json);
-        // $input['latitude'] = $json->{'results'}[0]->{'geometry'}->{'location'}->{'lat'};
-        // $input['longitude'] = $json->{'results'}[0]->{'geometry'}->{'location'}->{'lng'};
-        $input['latitude'] = 26.912434;
-        $input['longitude'] = 75.787270;
-        $restaurant = $this->restaurantRepository->create($input);
-        $restaurant->menu()->attach($input['menu']);
+         $restaurant = $this->restaurantRepository->create($input);
+         //dd($input['menu']);
+         if(!empty($request->menu)) {
+             $restaurant->menus()->attach($input['menu']);
+         }
+        if(!empty($request->category)) {
+             $restaurant->categories()->attach($input['category']);
+         }
+          if(!empty($request->manage_restaurant)) {
+            $manageRestaurantModels = [];
+            foreach ($request->manage_restaurant as $manageRestaurant) {
+                $manageRestaurantModels[] = new RestaurantManageTime($manageRestaurant);
+            }
+
+            $restaurant->manageTime()->saveMany($manageRestaurantModels);
+        }
         $gstPanNumber = $shopLicence = $photo = "";
         if($request->shop_licence) {
             $shopLicence = time().'.'.$request->shop_licence->extension();  
@@ -118,7 +132,7 @@ class RestaurantController extends AppBaseController
      */
     public function show($id)
     {
-        $restaurant = Restaurant::with(['menus', 'restaurantDetail'])->find($id);
+        $restaurant = Restaurant::with(['menus', 'restaurantDetail', 'manageTime','categories'])->find($id);
 
         if (empty($restaurant)) {
             Flash::error('Restaurant not found');
@@ -138,7 +152,7 @@ class RestaurantController extends AppBaseController
      */
     public function edit($id)
     {
-        $restaurant = Restaurant::with(['menus', 'restaurantDetail'])->find($id);
+        $restaurant = Restaurant::with(['menus', 'restaurantDetail', 'manageTime','categories'])->find($id);
 
         if (empty($restaurant)) {
             Flash::error('Restaurant not found');
@@ -147,7 +161,9 @@ class RestaurantController extends AppBaseController
         }
         $menus =  Menu::where('status',1)->pluck('title','id');
         $selectedMenus = $restaurant->menus()->allRelatedIds();
-        return view('restaurants.edit', compact('restaurant', 'menus', 'selectedMenus'));
+        $categories =  Category::where('status',1)->pluck('category','id');
+        $selectedCat =  $restaurant->categories()->allRelatedIds();
+        return view('restaurants.edit', compact('restaurant', 'menus', 'selectedMenus', 'categories','selectedCat'));
     }
 
     /**
@@ -183,11 +199,13 @@ class RestaurantController extends AppBaseController
 
         // $input['latitude'] = $json->{'results'}[0]->{'geometry'}->{'location'}->{'lat'};
         // $input['longitude'] = $json->{'results'}[0]->{'geometry'}->{'location'}->{'lng'};
-        $input['latitude'] = 26.912434;
-        $input['longitude'] = 75.787270;
         $restaurant = $this->restaurantRepository->update($input, $id);
-
-        $restaurant->menus()->sync($input['menu']);
+        if(!empty($input['menu'])) {
+             $restaurant->menus()->sync($input['menu']);
+        }
+       if(!empty($request->category)) {
+             $restaurant->categories()->sync($input['category']);
+         }
         $gstPanNumber = $shopLicence = $photo = "";
         if($request->shop_licence) {
             $shopLicence = time().'.'.$request->shop_licence->extension();  
@@ -219,6 +237,17 @@ class RestaurantController extends AppBaseController
             }
             
         }
+        if(!empty($request->manage_restaurant)) {
+            //dd($request->manage_restaurant);
+            $manageRestaurantModels = [];
+            foreach ($request->manage_restaurant as $manageRestaurant) {
+                $manageRestaurantModels[] = new RestaurantManageTime($manageRestaurant);
+            }
+
+            RestaurantManageTime::where('restaurant_id',$id)->delete();
+            $restaurant->manageTime()->saveMany($manageRestaurantModels);
+        }
+        
         Flash::success('Restaurant updated successfully.');
 
         return redirect(route('restaurants.index'));
@@ -248,12 +277,5 @@ class RestaurantController extends AppBaseController
         Flash::success('Restaurant deleted successfully.');
 
         return redirect(route('restaurants.index'));
-    }
-
-
-    public function ratingAndReview(Request $request)
-    {
-        $rating = RestaurantRating::with(['users', 'restaurants'])->get();
-        return view('users.create');
     }
 }

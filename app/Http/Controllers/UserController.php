@@ -23,6 +23,10 @@ class UserController extends AppBaseController
 
     public function __construct(UserRepository $userRepo, User $user)
     {
+        $this->middleware('permission:user-list');
+        $this->middleware('permission:user-create', ['only' => ['create','store']]);
+        $this->middleware('permission:user-edit', ['only' => ['edit','update']]);
+        $this->middleware('permission:user-delete', ['only' => ['destroy']]);
         $this->userRepository = $userRepo;
         $this->user = $user;
     }

@@ -26,6 +26,7 @@ class Cuisine extends Model
 
 
     public $fillable = [
+        'restaurant_owner_id',
         'name',
         'description',
         'status'

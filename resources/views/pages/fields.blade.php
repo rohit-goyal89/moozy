@@ -1,3 +1,8 @@
+<!-- Coupon Type Field -->
+<div class="form-group col-sm-6 required">
+    {!! Form::label('role_id', 'Roles:') !!}
+    {!! Form::select('role_id',$roles , null, ['class' => 'form-control']) !!}
+</div>
 <!-- Title Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('title', 'Title:') !!}
@@ -32,8 +37,9 @@
 <div class="form-group col-sm-6">
 {!! Form::label('status', 'Status:',['class'=>'control-label','style'=>'display:block;']) !!}
 @if(isset($page) )
-<input data-id="{{$page->id ?? 0}}" class="toggle-class form-control" type="checkbox" data-onstyle="success" data-offstyle="danger" data-toggle="toggle" data-on="Active" data-off="InActive" name="status" {{ $page->status ? 'checked' : '' }}>
+<input data-id="{{$page->id}}" name="status"   type="checkbox" {{ $page->status ? 'checked' : '' }}  data-bootstrap-switch data-off-color="danger" data-on-color="success" data-on="Active" data-off="InActive">
 @else
-<input data-id="0" class="toggle-class form-control" type="checkbox" data-onstyle="success" data-offstyle="danger" name="status" data-toggle="toggle" data-on="Active" data-off="InActive">
+<input data-id="0" name="status"   type="checkbox" data-bootstrap-switch data-off-color="danger" data-on-color="success" data-on="Active" data-off="InActive">
 @endif
+
 </div>

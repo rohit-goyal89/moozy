@@ -26,6 +26,7 @@ class Faq extends Model
 
 
     public $fillable = [
+        'role_id',
         'question',
         'answer',
         'status'
@@ -48,6 +49,7 @@ class Faq extends Model
      * @var array
      */
     public static $rules = [
+        'role_id' => 'required',
         'question' => 'required',
         'answer' => 'required'
     ];

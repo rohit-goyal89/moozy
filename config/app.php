@@ -255,9 +255,33 @@ return [
     'radius' => 20,
     'limit' => 10,
     'sort' => [
-        1 => 'Popularity',
-        2 => 'Delivery Time',
-        3 => 'Avg. Price (High To Low)',
-        4 => 'Rating',
+        [
+            'id'=>1,
+            'name'=>'Popularity',
+        ],
+        [
+            'id'=>2,
+            'name'=>'Delivery Time',
+        ],
+        [
+            'id'=>3,
+            'name'=>'Avg. Price (High To Low)',
+        ],
+        [
+             'id'=>4,
+            'name'=>'Rating'
+        
+        ]
+           
+    ],
+    'day' => [
+        ""=>"Select",
+        1=>"Monday",
+        2=>"Tuesday",
+        3=>"Wednesday",
+        4=>"Thursday",
+        5=>"Friday",
+        6=>"Saturday",
+        7=>"Sunday",
     ],
 ];

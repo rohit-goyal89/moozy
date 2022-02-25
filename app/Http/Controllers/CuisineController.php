@@ -6,6 +6,8 @@ use App\Http\Requests\CreateCuisineRequest;
 use App\Http\Requests\UpdateCuisineRequest;
 use App\Repositories\CuisineRepository;
 use App\Http\Controllers\AppBaseController;
+use App\Models\Cuisine;
+use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Flash;
 use Response;
@@ -29,7 +31,11 @@ class CuisineController extends AppBaseController
      */
     public function index(Request $request)
     {
-        $cuisines = $this->cuisineRepository->all();
+        $where = [];
+        if(auth()->user()->role_id != 1) {
+            $where['restaurant_owner_id'] = auth()->user()->id;
+        }
+        $cuisines = Cuisine::where($where)->paginate(config('app.limit'));
 
         return view('cuisines.index')
             ->with('cuisines', $cuisines);
@@ -42,6 +48,7 @@ class CuisineController extends AppBaseController
      */
     public function create()
     {
+        $where['status'] = 1;
         return view('cuisines.create');
     }
 
@@ -60,6 +67,7 @@ class CuisineController extends AppBaseController
         } else {
             $input['status'] = 0;
         }
+        $input['restaurant_owner_id'] = auth()->user()->id;
         $cuisine = $this->cuisineRepository->create($input);
 
         Flash::success('Cuisine saved successfully.');
@@ -104,7 +112,7 @@ class CuisineController extends AppBaseController
             return redirect(route('cuisines.index'));
         }
 
-        return view('cuisines.edit')->with('cuisine', $cuisine);
+        return view('cuisines.edit', compact('cuisine'));
     }
 
     /**
@@ -129,6 +137,9 @@ class CuisineController extends AppBaseController
             $input['status'] = 1;
         } else {
             $input['status'] = 0;
+        }
+        if(auth()->user()->role_id != 1) {
+            $input['restaurant_owner_id'] = auth()->user()->id;
         }
         $cuisine = $this->cuisineRepository->update($input, $id);
 

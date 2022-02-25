@@ -45,5 +45,8 @@ class UserDetail extends Model
         
     ];
 
-    
+    public function getPhotoAttribute($value)
+    {
+        return config('app.url').'/images/'.$value;
+    }
 }

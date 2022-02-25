@@ -29,6 +29,7 @@ class Page extends Model
 
 
     public $fillable = [
+        'role_id',
         'title',
         'slug',
         'description',
@@ -58,6 +59,7 @@ class Page extends Model
      * @var array
      */
     public static $rules = [
+        'role_id' => 'required',
         'title' => 'required',
         'meta_tag' => 'required',
         'meta_key' => 'required'

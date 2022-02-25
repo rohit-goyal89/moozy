@@ -26,6 +26,7 @@ class Support extends Model
 
 
     public $fillable = [
+        'role_id',
         'title',
         'contact',
         'is_flag'
@@ -48,6 +49,7 @@ class Support extends Model
      * @var array
      */
     public static $rules = [
+        'role_id' => 'required',
         'title' => 'required',
         'contact' => 'required',
         'is_flag' => 'required'

@@ -2,7 +2,7 @@
     <table class="table" id="offers-table">
         <thead>
         <tr>
-            <th>Offer</th>
+            <th>Offer Type</th>
         <th>Discount</th>
         <th>Status</th>
             <th colspan="3">Action</th>
@@ -12,7 +12,7 @@
             @if(count($offers) > 0)
         @foreach($offers as $offer)
             <tr>
-                <td>{{ $offer->offer }}</td>
+                <td>{{ ($offer->type == 1)?"Percentage(%)":"Amount" }}</td>
                 <td>{{ $offer->discount }}</td>
                 @if($offer->status == 1) 
                     <td>Active</td>

@@ -29,7 +29,7 @@ return [
     'sign_in_fail' => 'Incorrect username or password',
     'email_verification_fail' => 'Please verify your account to access it.',
 
-    'registration_issue' => 'There is not exist any customer with the provided email or mobile',
+    'registration_issue' => 'There is not exist any user with the provided email or mobile',
     'registration' => [
         'title' => 'User Registration',
         'i_agree' => 'I agree',

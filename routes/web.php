@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 //     return view('welcome');
 // });
 Route::get('/', 'Auth\LoginController@showLoginForm');
+Route::get('/participant', 'Auth\LoginController@showLoginForm');
 Route::get('email/verify/{id}', 'VerificationController@verify')->name('verification.verify'); // Make sure to keep this as your route name
 
 Route::get('email/resend', 'VerificationController@resend')->name('verification.resend');
@@ -24,9 +25,9 @@ Route::get('email/resend', 'VerificationController@resend')->name('verification.
 Auth::routes(['verify' => true]);
 
 Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/participant/home', 'HomeController@index')->name('home');
 //Route::get('/home', 'HomeController@index')->middleware('verified');
 Route::group(['middleware' => ['auth']], function() {
-    Route::get('users/rating', 'UserController@ratingAndReview');
     Route::resource('users', 'UserController');
     Route::resource('pages', 'PageController');
     Route::resource('roles','RoleController');
@@ -34,11 +35,24 @@ Route::group(['middleware' => ['auth']], function() {
     Route::resource('categories', 'CategoryController');
     Route::resource('cuisines', 'CuisineController');
     Route::resource('faqs', 'FaqController');
-    Route::get('restaurants/rating', 'RestaurantController@ratingAndReview');
     Route::resource('restaurants', 'RestaurantController');
     Route::resource('offers', 'OfferController');
     Route::resource('supports', 'SupportController');
+    Route::get('submenu/delete', 'MenuController@deleteSubmenu');
     Route::resource('menus', 'MenuController');
     Route::resource('notifications', 'NotificationController');
     Route::resource('videos', 'VideoController');
+    Route::get('user_rating', 'RatingReviewController@userRating')->name('user_rating');
+    Route::get('restaurant_rating', 'RatingReviewController@restaurantRating')->name('restaurant_rating');
+});
+
+Route::group(['prefix'=>'participant'], function() {
+    Route::resource('coupons', 'CouponController');
+    Route::resource('categories', 'CategoryController');
+    Route::resource('cuisines', 'CuisineController');
+    Route::resource('restaurants', 'RestaurantController');
+    Route::resource('offers', 'OfferController');
+    Route::resource('menus', 'MenuController');
+    Route::get('user_rating', 'RatingReviewController@userRating')->name('user_rating');
+    Route::get('restaurant_rating', 'RatingReviewController@restaurantRating')->name('restaurant_rating');
 });

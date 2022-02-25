@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Eloquent as Model;
+use App\Category;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -38,6 +39,7 @@ class Restaurant extends Model
 
 
     public $fillable = [
+        'user_id',
         'name',
         'address',
         'postcode',
@@ -52,6 +54,7 @@ class Restaurant extends Model
         'owner_name',
         'email',
         'restaurant_type',
+        'prepare_time',
         'latitude',
         'longitude',
         'status'
@@ -94,8 +97,13 @@ class Restaurant extends Model
         'phone' => 'required',
         'address' => 'required',
         'restaurant_type' => 'required',
+         'menu' => 'required',   
         'owner_name' => 'required',
-        'email' => 'required'
+        'email' => 'required',
+        'manage_restaurant.*.day' => 'required',
+        'manage_restaurant.*.open_time' => 'required',
+        'manage_restaurant.*.close_time' => 'required',
+        'photo' => 'required'
     ];
 
     public function restaurantDetail() {
@@ -133,7 +141,12 @@ class Restaurant extends Model
 
     public function avgRating()
     {
-        return $this->ratings()->avg("rating");
+        return round($this->ratings()->avg("rating"));
+    }
+
+     public function manageTime()
+    {
+        return $this->hasMany(RestaurantManageTime::class, 'restaurant_id');
     }
 
      /**
@@ -142,5 +155,10 @@ class Restaurant extends Model
     public function favouriteRestaurants()
     {
         return $this->belongsToMany(User::class, 'user_restaurant');
+    }
+
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'restaurant_category');
     }
 }

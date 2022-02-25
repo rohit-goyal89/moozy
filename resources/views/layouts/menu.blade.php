@@ -6,6 +6,7 @@
         <p>Dashboard</p>
     </a>
 </li>
+@if(auth()->user()->can('role-list'))
 <li class="nav-item">
     <a href="{{ route('roles.index') }}"
        class="nav-link {{ Request::is('roles*') ? 'active' : '' }}">
@@ -13,6 +14,8 @@
         <p>Roles Manager</p>
     </a>
 </li>
+@endif
+@if(auth()->user()->can('user-list'))
 <li class="nav-item has-treeview {{ Request::is('users*') ? 'menu-open' : '' }}" >
    <a href="#" class="nav-link {{ Request::is('users*') ? 'active' : '' }}">
      <i class="nav-icon fas fa-tachometer-alt"></i>
@@ -38,7 +41,9 @@
        </a>
      </li>
    </ul>
- </li>
+</li>
+@endif
+@if(auth()->user()->can('categories-list'))
 <li class="nav-item">
     <a href="{{ route('categories.index') }}"
        class="nav-link {{ Request::is('categories*') ? 'active' : '' }}">
@@ -46,6 +51,7 @@
         <p>Categories Manager</p>
     </a>
 </li>
+@endif
 <li class="nav-item">
     <a href="{{ route('restaurants.index') }}"
        class="nav-link {{ Request::is('restaurants*') ? 'active' : '' }}">
@@ -71,6 +77,7 @@
         <p>Cuisines Manager</p>
     </a>
 </li>
+
 <li class="nav-item">
     <a href="{{ route('menus.index') }}"
        class="nav-link {{ Request::is('menus*') ? 'active' : '' }}">
@@ -78,6 +85,7 @@
         <p>Menus Manager</p>
     </a>
 </li>
+@if(auth()->user()->can('offers-list'))
 <li class="nav-item">
     <a href="{{ route('offers.index') }}"
        class="nav-link {{ Request::is('offers*') ? 'active' : '' }}">
@@ -85,6 +93,8 @@
         <p>Offers Manager</p>
     </a>
 </li>
+@endif
+@if(auth()->user()->can('pages-list'))
 <li class="nav-item">
     <a href="{{ route('pages.index') }}"
        class="nav-link {{ Request::is('pages*') ? 'active' : '' }}">
@@ -92,8 +102,8 @@
         <p>Pages Manager</p>
     </a>
 </li>
-
-
+@endif
+@if(auth()->user()->can('faqs-list'))
 <li class="nav-item">
     <a href="{{ route('faqs.index') }}"
        class="nav-link {{ Request::is('faqs*') ? 'active' : '' }}">
@@ -101,8 +111,9 @@
         <p>Faqs Manager</p>
     </a>
 </li>
+@endif
 
-
+@if(auth()->user()->can('supports-list'))
 <li class="nav-item">
     <a href="{{ route('supports.index') }}"
        class="nav-link {{ Request::is('supports*') ? 'active' : '' }}">
@@ -110,7 +121,8 @@
         <p>Supports Manager</p>
     </a>
 </li>
-
+@endif
+@if(auth()->user()->can('notifications-list'))
 <li class="nav-item">
     <a href="{{ route('notifications.index') }}"
        class="nav-link {{ Request::is('notifications*') ? 'active' : '' }}">
@@ -118,6 +130,8 @@
         <p>Notifications Manager</p>
     </a>
 </li>
+@endif
+@if(auth()->user()->can('videos-list'))
 
 <li class="nav-item">
     <a href="{{ route('videos.index') }}"
@@ -126,8 +140,8 @@
         <p>Videos Manager</p>
     </a>
 </li>
-
-<li class="nav-item has-treeview" >
+@endif
+<li class="nav-item has-treeview {{ (Request::is('user_rating') || Request::is('restaurant_rating'))  ? 'menu-open' : '' }}" >
    <a href="#" class="nav-link">
      <i class="nav-icon fas fa-tachometer-alt"></i>
      <p>
@@ -137,12 +151,12 @@
    </a>
    <ul class="nav nav-treeview">
      <li class="nav-item">
-       <a href="{{ route('users.index') }}?role=2" class="nav-link ">
+       <a href="{{ route('restaurant_rating') }}" class="nav-link {{ Request::is('restaurant_rating') ? 'active' : '' }}">
          <p>Restaurant Rating</p>
        </a>
      </li>
      <li class="nav-item">
-       <a href="{{ route('users.index') }}?role=3" class="nav-link">
+       <a href="{{ route('user_rating') }}" class="nav-link {{ Request::is('user_rating') ? 'active' : '' }}">
          <p>Driver Rating</p>
        </a>
      </li>

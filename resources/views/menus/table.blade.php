@@ -42,5 +42,8 @@
             <tr><td colspan="4" style="text-align:center;">No Record Found!!</td></tr>
         @endif
         </tbody>
+       
+
     </table>
 </div>
+ {!! $menus->links() !!}

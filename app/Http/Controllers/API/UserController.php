@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\User; 
 use App\Models\Offer; 
 use App\UserAddress; 
+use App\UserDetail; 
 use App\Notification; 
 use App\Models\Support; 
 use App\Models\UserRating; 
@@ -26,8 +27,12 @@ class UserController extends Controller
      */ 
     
     public function login(){ 
-        $user = User::where('email','Like', request('email'))->orwhere('mobile_no','Like', request('email'))->with(['userAddress','userDetail'])->first();
-        if(!empty($user) && $user->roles->pluck('id')[0]  == 4) {
+        $user = User::where('email','Like', request('email'))->where('role_id',request('role_id'))->with(['userAddress'])->orwhere('mobile_no','Like', request('email'))->first();
+        if(!empty($user)) {
+            $userDetail = UserDetail::where('user_id',$user->id)->first();
+            $user->photo = $userDetail->photo ?? "";
+        }
+        if(!empty($user) && in_array($user->roles->pluck('id')[0],[2,3,4])) {
             
 
             if(empty($user->email_verified_at)){
@@ -35,8 +40,8 @@ class UserController extends Controller
                     if(Auth::attempt(['mobile_no' => request('email'), 'password' => request('password')])){
                         User::where('email', request('email'))->update([
            'device_id' => request('device_id')]);
-                        $user = Auth::user(); 
-                        $user->token = $user->createToken('MyApp')-> accessToken;
+                        $loggenInUser = Auth::user(); 
+                        $user->token = $loggenInUser->createToken('MyApp')-> accessToken;
                         $response['status'] = true;
                         $response['data'] =  $user; 
                         $response['message'] = Lang::get('auth.sign_in_success');
@@ -52,9 +57,9 @@ class UserController extends Controller
                     if(Auth::attempt(['email' => request('email'), 'password' => request('password')])){ 
                         User::where('email', request('email'))->update([
            'device_id' => request('device_id')]);
-                        $user = Auth::user(); 
+                        $loggenInUser = Auth::user(); 
                         $response['status'] = true;
-                        $user->token = $user->createToken('MyApp')-> accessToken;
+                        $user->token = $loggenInUser->createToken('MyApp')-> accessToken;
                         $response['data'] =  $user; 
                         $response['message'] = Lang::get('auth.sign_in_success');
                         return response()->json($response, $this-> successStatus); 
@@ -65,6 +70,11 @@ class UserController extends Controller
                         return response()->json($response, 200); 
                     }  
                 }
+            } else if(in_array($user->role_id,[2,3])) {
+                $response['status'] = false;
+                $response['data'] =  ''; 
+                $response['message'] = "Your account not verified, please contact to moozy admin";
+                return response()->json($response, 200); 
             } else {
                 $otp = rand(pow(10, 4-1), pow(10, 4)-1);
                 User::where('email', request('email'))->update([
@@ -113,7 +123,7 @@ class UserController extends Controller
         $input = $request->all(); 
         $input['email_verified_at'] = time(); 
         $input['password'] = bcrypt($input['password']); 
-        $input['role_id'] = 4;
+       // $input['role_id'] = 4;
         $input['otp'] = rand(pow(10, 4-1), pow(10, 4)-1);
         $input['status'] = 0;
         $user =User::create($input);
@@ -154,13 +164,17 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response 
      */ 
     public function verify(){
-        $user = User::where('otp',request('otp'))->where('email',request('email'))->first();
-      
+        $user = User::where('otp',request('otp'))->where('email',request('email'))->with(['userAddress'])->first();
         if($user) {
+             Auth::login($user);
+            $userinfo = Auth::user();
+            
+
             $input['email_verified_at'] = NULL;
             $input['otp'] = '';
             $input['status'] = 1;
             $user->update($input);
+            $user->token = $userinfo->createToken('MyApp')-> accessToken;
             $response['status'] = true;
             $response['data'] =  $user; 
             $response['message'] = "Your account verify successfully";
@@ -295,6 +309,11 @@ class UserController extends Controller
             $user = User::where('social_id',$requestAll['id'])->first();
         }
         if(!empty($user)) {
+            Auth::login($user);
+            $user = Auth::user();
+            $user->token = $user->createToken('MyApp')-> accessToken;
+             User::where('social_id',$requestAll['social_id'])->update([
+           'device_id' => $requestAll['device_id']]);
             $response['status'] = true;
             $response['data'] =  $user; 
             $response['message'] = Lang::get('auth.sign_up_success');
@@ -305,7 +324,9 @@ class UserController extends Controller
 
         $user =User::create($requestAll);
         $user->assignRole( $role_id); 
-        
+        Auth::login($user);
+        $user = Auth::user();
+        $user->token = $user->createToken('MyApp')-> accessToken;
         $response['status'] = true;
         $response['data'] =  $user; 
         $response['message'] = Lang::get('auth.sign_up_success');
@@ -321,7 +342,13 @@ class UserController extends Controller
      */
     public function offers(Request $request)
     {
-        $offers = Offer::with('restaurants')->where('status',1)->get();
+        $req = $request->all();
+        if(isset($req['page']) && $req['page'] > 1) {
+             $offset = ($req['page'] - 1)*config('app.limit');
+        } else {
+            $offset = 0;
+        }
+        $offers = Offer::where('status',1)->get();
 
         $response['status'] = true;
         $response['data'] =  $offers; 
@@ -358,11 +385,24 @@ class UserController extends Controller
             $json = json_decode($json);
             // $input['latitude'] = $json->{'results'}[0]->{'geometry'}->{'location'}->{'lat'};
             // $input['longitude'] = $json->{'results'}[0]->{'geometry'}->{'location'}->{'lng'};
-            $input['latitude'] = 26.912434;
-            $input['longitude'] = 75.787270;
             $input['is_default'] = 0;
+            $userAddress = UserAddress::where('user_id',$input['user_id'])->count();
             $user = User::where('id',$input['user_id'])->first();
-            $user->userAddress()->create($input);
+            if(isset($input['id'])) {
+                $id = $input['id'];
+                unset($input['id']);
+                if($userAddress == 1) {
+                    $input['is_default'] = 1;
+                }
+                UserAddress::where('id', $id)->update($input);
+                //$user->userAddress()->update($input)->where('id',1);
+            } else {
+                if($userAddress == 0) {
+                    $input['is_default'] = 1;
+                }
+                 $user->userAddress()->create($input);
+            }
+           
             $userInfo = User::where('id',$input['user_id'])->with(['userAddress', 'userDetail'])->first();
             $response['status'] = true;
             $response['data'] =  $userInfo; 
@@ -391,20 +431,93 @@ class UserController extends Controller
         if ($validator->fails()) {
             $response = array("status" => false, "message" => $validator->errors()->first(), "data" => array());
         } else {
-            $user = User::where('id',$input['user_id'])->first();
-            $req['user_id'] = $input['user_id'];
-            $req['is_default'] = 0;
-            UserAddress::where('user_id', $input['user_id'])->update(['is_default' => 0]);
-            UserAddress::where('id', $input['id'])->update(['is_default' => $input['is_default']]);
-            $userInfo = User::where('id',$input['user_id'])->with(['userAddress', 'userDetail'])->first();
-            $response['status'] = true;
-            $response['data'] =  $userInfo; 
-            $response['message'] = "Make default address successfully.";
+            $userAddress = UserAddress::where('user_id',$input['user_id'])->first();
+            if(!empty($userAddress)) {
+                $req['user_id'] = $input['user_id'];
+                $req['is_default'] = 0;
+                UserAddress::where('user_id', $input['user_id'])->update(['is_default' => 0,'updated_at'=>date('Y-m-d G:i:s')]);
+                UserAddress::where('id', $input['id'])->update(['is_default' => $input['is_default'],'updated_at'=>date('Y-m-d G:i:s')]);
+                $userInfo = User::where('id',$input['user_id'])->with(['userAddress', 'userDetail'])->first();
+                $response['status'] = true;
+                $response['data'] =  []; 
+                $response['message'] = "Make default address successfully.";
+            } else {
+                $response['status'] = false;
+                $response['data'] =  []; 
+                $response['message'] = "No address exist for particular user.";
+            }
+            
         }
         return response()->json($response, $this-> successStatus);
     }
 
+    /** 
+     * delete Address as default api 
+     * 
+     * @return \Illuminate\Http\Response 
+     */ 
+    
+    public function deleteAddress(Request $request) {
 
+        $input = $request->all();
+
+        $rules = array(
+            'id' => 'required'
+        );
+        $validator = Validator::make($input, $rules);
+        if ($validator->fails()) {
+            $response = array("status" => false, "message" => $validator->errors()->first(), "data" => array());
+        } else {
+            $userAddress = UserAddress::where('id', $input['id'])->get();
+            if(!empty($userAddress)) {
+                UserAddress::where('id', $input['id'])->delete();
+                $response['status'] = true;
+                $response['data'] =  []; 
+                $response['message'] = "Address deleted successfully.";
+            } else {
+                $response['status'] = false;
+                $response['data'] =  []; 
+                $response['message'] = "No address exist for particular user.";
+            }
+           
+        }
+        return response()->json($response, $this-> successStatus);
+    }
+
+    /** 
+     * get Address api 
+     * 
+     * @return \Illuminate\Http\Response 
+     */ 
+
+    public function getAddress(Request $request) 
+    { 
+        $req=$request->all();
+         if(isset($req['page']) && $req['page'] > 1) {
+            $offset = 10*($req['page']-1);
+        } else {
+            $offset = 0;
+        }
+        $userAddresses = UserAddress::offset($offset)->where('user_id', $req['user_id'])
+            ->limit(config('app.limit'))
+            ->orderBy('updated_at','desc')
+             ->orderBy('is_default','desc')
+            ->get(); 
+        $total = UserAddress::where('user_id', $req['user_id'])->count();
+        if($total > config('app.limit')) {
+            $page = floor($total/10);
+        } else {
+             $page = $total;
+        }
+        if(($total > config('app.limit')) && ($total%config('app.limit') > 1)) {
+          $page = $page + 1;  
+        }
+        $response['totalPages'] = $page;
+        $response['status'] = true;
+        $response['data'] =  $userAddresses; 
+        $response['message'] = "user Addresses list";
+        return response()->json($response, $this-> successStatus); 
+    }
     /** 
      * support api 
      * 
@@ -426,27 +539,89 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response 
      */ 
 
-    public function updateProfile($userId, Request $request)
+    public function updateProfile(Request $request)
     {
         $input = $request->all();
         $rules = array(
             'user_id' => 'required',
-            'name' => 'required'
+            'name' => 'required',
         );
         $validator = Validator::make($input, $rules);
 
         if ($validator->fails()) {
             $response = array("status" => false, "message" => $validator->errors()->first(), "data" => array());
         } else {
-            User::where('user_id', $userId)->update(['name' => $input['name']]);
-            $userInfo = User::where('id',$userId)->with(['userAddress', 'userDetail'])->first();
+            User::where('id', $input['user_id'])->update(['name' => $input['name']]);
+            $user = User::where('id', $input['user_id'])->first();
+           
+            $imageName = $licenceName = "";
+            if($request->photo) {
+                $imageName = time().'.'.$request->photo->extension();  
+
+                $request->photo->move(public_path('images'), $imageName);
+            }
+            if(!empty($input['photo'])) {
+                 UserDetail::where('user_id', $input['user_id'])->update(['photo' => $imageName,'licence_file' => '']);
+            }
+            if(!empty($user)) {
+                $userDetail = UserDetail::where('user_id',$input['user_id'])->first();
+                $user->photo = $userDetail->photo ?? "";
+            } else {
+                $user->photo = "";
+            }
+            $loggenInUser = Auth::user(); 
+            $user->token = $loggenInUser->createToken('MyApp')-> accessToken;
             $response['status'] = true;
-            $response['data'] =  $userInfo; 
-            $response['message'] = "Make default address successfully.";
+            $response['data'] =  $user; 
+            $response['message'] = "Profile updated successfully.";
         }
         return response()->json($response, $this-> successStatus);
     }
 
+
+    /** 
+     * update notification setting api 
+     * 
+     * @return \Illuminate\Http\Response 
+     */ 
+
+    public function setNotification(Request $request) 
+    { 
+        $input = $request->all();
+        $userInfo = User::where('id',$input['user_id'])->with(['userAddress', 'userDetail'])->first();
+        if($userInfo->is_notification == 1){
+            User::where('id', $input['user_id'])->update(['is_notification' => 0]);
+        
+        } else {
+            User::where('id', $input['user_id'])->update(['is_notification' => 1]);
+        }
+        
+        $response['status'] = true;
+        $response['data'] =  []; 
+        $response['message'] = "Notification setting updated.";
+
+        return response()->json($response, $this-> successStatus); 
+    }
+
+
+    /** 
+     * get notification setting api 
+     * 
+     * @return \Illuminate\Http\Response 
+     */ 
+
+    public function getNotification(Request $request) 
+    { 
+        $input = $request->all();
+        $userInfo = User::where('id',$input['user_id'])->first();
+        
+        
+        $response['status'] = true;
+        $response['data'] =  $userInfo; 
+        $response['message'] = "Notification detail.";
+
+        return response()->json($response, $this-> successStatus); 
+    }
 
     /** 
      * notification api 
@@ -454,9 +629,28 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response 
      */ 
 
-    public function notifications() 
+    public function notifications(Request $request) 
     { 
-        $notification = Notification::get(); 
+        $req=$request->all();
+        if(isset($req['page']) && $req['page'] > 1) {
+            $offset = 10*($req['page']-1);
+        } else {
+            $offset = 0;
+        }
+        $notification = Notification::offset($offset)
+            ->limit(config('app.limit'))
+            ->get(); 
+        $total = Notification::where('status',1)->count();
+        if($total > config('app.limit')) {
+            $page = floor($total/10);
+        } else {
+             $page = $total;
+        }
+        if(($total > config('app.limit')) && ($total%config('app.limit') > 1)) {
+          $page = $page + 1;  
+        }
+
+        $response['totalPages'] = $page;
         $response['status'] = true;
         $response['data'] =  $notification; 
         $response['message'] = "notification list";

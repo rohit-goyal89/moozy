@@ -1,3 +1,8 @@
+<!-- Coupon Type Field -->
+<div class="form-group col-sm-6 required">
+    {!! Form::label('role_id', 'Roles:') !!}
+    {!! Form::select('role_id',$roles , null, ['class' => 'form-control']) !!}
+</div>
 <!-- Title Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('title', 'Title:') !!}

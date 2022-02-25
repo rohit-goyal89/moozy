@@ -29,6 +29,7 @@ class Notification extends Model
 
 
     public $fillable = [
+        'role_id',
         'title',
         'description',
         'type',
@@ -54,12 +55,14 @@ class Notification extends Model
      */
     
      public static $rules = [
+        'role_id' => 'required',
         'title' => 'required',
         'description' => 'required'
     ];
      
 
     public static $updaterules = [
+        'role_id' => 'required',
         'title' => 'required',
         'description' => 'required'
     ];

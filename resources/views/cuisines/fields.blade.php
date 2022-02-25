@@ -13,8 +13,8 @@
 <div class="form-group col-sm-6">
 {!! Form::label('status', 'Status:',['class'=>'control-label','style'=>'display:block;']) !!}
 @if(isset($cuisine) )
-<input data-id="{{$cuisine->id ?? 0}}" class="toggle-class form-control" type="checkbox" data-onstyle="success" data-offstyle="danger" data-toggle="toggle" data-on="Active" data-off="InActive" name="status" {{ $cuisine->status ? 'checked' : '' }}>
+<input data-id="{{$cuisine->id}}" name="status"   type="checkbox" {{ $cuisine->status ? 'checked' : '' }}  data-bootstrap-switch data-off-color="danger" data-on-color="success" data-on="Active" data-off="InActive">
 @else
-<input data-id="0" class="toggle-class form-control" type="checkbox" data-onstyle="success" data-offstyle="danger" name="status" data-toggle="toggle" data-on="Active" data-off="InActive">
+<input data-id="0" name="status"   type="checkbox" data-bootstrap-switch data-off-color="danger" data-on-color="success" data-on="Active" data-off="InActive">
 @endif
 </div>

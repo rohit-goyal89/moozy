@@ -5,36 +5,29 @@
     <title>{{ config('app.name') }}</title>
     <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
-          integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
-          crossorigin="anonymous" referrerpolicy="no-referrer" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="<?php echo  url('/'); ?>/plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Tempusdominus Bootstrap 4 -->
+  <link rel="stylesheet" href="<?php echo  url('/'); ?>/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
+  <!-- iCheck -->
+  <link rel="stylesheet" href="<?php echo  url('/'); ?>/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- JQVMap -->
+  <link rel="stylesheet" href="<?php echo  url('/'); ?>/plugins/jqvmap/jqvmap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="<?php echo  url('/'); ?>/dist/css/adminlte.min.css">
 
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap4-toggle/3.6.1/bootstrap4-toggle.min.css"
-          integrity="sha512-EzrsULyNzUc4xnMaqTrB4EpGvudqpetxG/WNjCpG6ZyyAGxeB6OBF9o246+mwx3l/9Cn838iLIcrxpPHTiygAA=="
-          crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <!-- AdminLTE -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css"
-          integrity="sha512-mxrUXSjrxl8vm5GwafxcqTrEwO1/oBNU25l20GODsysHReZo4uhVISzAKzaABH6/tTfAxZrY2FprmeAP5UZY8A=="
-          crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <!-- iCheck -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/icheck-bootstrap/3.0.1/icheck-bootstrap.min.css"
-          integrity="sha512-8vq2g5nHE062j3xor4XxPeZiPjmRDh6wlufQlfC6pdQ/9urJkU07NM0tEREeymP++NczacJ/Q59ul+/K2eYvcg=="
-          crossorigin="anonymous"/>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css"
-          integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw=="
-          crossorigin="anonymous"/>
-
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css"
-          integrity="sha512-aEe/ZxePawj0+G2R+AaIxgrQuKT68I28qh+wgLrcAJOz3rxCP+TwrK5SPN+E5I+1IQjNtcfvb96HDagwrKRdBw=="
-          crossorigin="anonymous"/>
-    <link rel="stylesheet" href="https://adminlte.io/themes/v3/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="<?php echo  url('/'); ?>/plugins/select2/css/select2.min.css">
+  <link rel="stylesheet" href="<?php echo  url('/'); ?>/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.class">
+  <!-- overlayScrollbars -->
+  <link rel="stylesheet" href="<?php echo  url('/'); ?>/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+  <!-- Daterange picker -->
+  <link rel="stylesheet" href="<?php echo  url('/'); ?>/plugins/daterangepicker/daterangepicker.css">
+  <!-- summernote -->
+  <link rel="stylesheet" href="<?php echo  url('/'); ?>/plugins/summernote/summernote-bs4.min.css"
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
     <style type="text/css">
         .required label {
             font-weight: bold;
@@ -45,9 +38,6 @@
             display:inline;
         }
     </style>
-    @stack('third_party_stylesheets')
-
-    @stack('page_css')
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -115,45 +105,51 @@
     </footer>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
-        integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
-        crossorigin="anonymous"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
-        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
-        crossorigin="anonymous"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"
-        integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s"
-        crossorigin="anonymous"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"
-        integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"
-        integrity="sha512-GDey37RZAxFkpFeJorEUwNoIbkTwsyC736KNSYucu1WJWFK9qTdzYub8ATxktr6Dwke7nbFaioypzbDOQykoRg=="
-        crossorigin="anonymous"></script>
-
-<script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"
-        integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A=="
-        crossorigin="anonymous"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/1.3/bootstrapSwitch.min.js"
-        integrity="sha512-DAc/LqVY2liDbikmJwUS1MSE3pIH0DFprKHZKPcJC7e3TtAOzT55gEMTleegwyuIWgCfOPOM8eLbbvFaG9F/cA=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-  <script src="https://cdn.ckeditor.com/4.17.1/standard-all/ckeditor.js"></script>
+<!-- jQuery -->
+<script src="<?php echo  url('/'); ?>/plugins/jquery/jquery.min.js"></script>
+<!-- jQuery UI 1.11.4 -->
+<script src="<?php echo  url('/'); ?>/plugins/jquery-ui/jquery-ui.min.js"></script>
+<!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+<script>
+  $.widget.bridge('uibutton', $.ui.button)
+</script>
+<!-- Bootstrap 4 -->
+<script src="<?php echo  url('/'); ?>/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- ChartJS -->
+<script src="<?php echo  url('/'); ?>/plugins/chart.js/Chart.min.js"></script>
+<!-- Sparkline -->
+<script src="<?php echo  url('/'); ?>/plugins/sparklines/sparkline.js"></script>
+<!-- JQVMap -->
+<script src="<?php echo  url('/'); ?>/plugins/jqvmap/jquery.vmap.min.js"></script>
+<script src="<?php echo  url('/'); ?>/plugins/jqvmap/maps/jquery.vmap.usa.js"></script>
+<!-- jQuery Knob Chart -->
+<script src="<?php echo  url('/'); ?>/plugins/jquery-knob/jquery.knob.min.js"></script>
+<!-- daterangepicker -->
+<script src="<?php echo  url('/'); ?>/plugins/moment/moment.min.js"></script>
+<script src="<?php echo  url('/'); ?>/plugins/daterangepicker/daterangepicker.js"></script>
+<!-- Tempusdominus Bootstrap 4 -->
+<script src="<?php echo  url('/'); ?>/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+<!-- Bootstrap Switch -->
+<script src="<?php echo  url('/'); ?>/plugins/bootstrap-switch/js/bootstrap-switch.min.js"></script>
+<!-- Summernote -->
+<script src="<?php echo  url('/'); ?>/plugins/summernote/summernote-bs4.min.js"></script>
+<!-- overlayScrollbars -->
+<script src="<?php echo  url('/'); ?>/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+<!-- AdminLTE App -->
+<script src="<?php echo  url('/'); ?>/dist/js/adminlte.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="<?php echo  url('/'); ?>/dist/js/demo.js"></script>
+<!-- AdminLTE dashboard demo (This is only for demo purposes) -->
+<script src="<?php echo  url('/'); ?>/dist/js/pages/dashboard.js"></script>
+<script src="<?php echo  url('/'); ?>/plugins/select2/js/select2.full.min.js"></script>
+<script src="<?php echo  url('/'); ?>/plugins/bootstrap-switch/js/bootstrap-switch.min.js"></script>
+<!--<script src="https://cdn.ckeditor.com/4.17.1/standard-all/ckeditor.js"></script>-->
 
 
 <script>
     $(function () {
-        bsCustomFileInput.init();
+       // bsCustomFileInput.init();
     });
 
     $("input[data-bootstrap-switch]").each(function(){
@@ -182,7 +178,71 @@
             }
         });
     })
+    $(".time").blur(function(){
+      var timestring = ($(this).val()).split(":");
+      var res ='';
+      if(timestring[1]){
+         res = leftPad(timestring[0], 2) +':'+leftPad(timestring[1], 2);
+      } else {
+         res = leftPad(timestring[0], 2) +':00';
+      }
+      $(this).val(res);
+    })
+    $(".add_manage_store").click(function(){
+        if($("#day").val() != "" && $("#open_time").val() != "" && $("#closing_time").val() != "") {
+          if( $("#manage_store_time tr").length <=7) {
+            var appendCnt = $("#manage_store_time tr").length -1;
+            console.log(appendCnt);
+            var html = '<tr><input type="hidden" name="manage_restaurant['+appendCnt+'][day]" value="'+$("#day").val()+'"><input type="hidden" name="manage_restaurant['+appendCnt+'][open_time]" value="'+$("#open_time").val()+'"><input type="hidden" name="manage_restaurant['+appendCnt+'][close_time]" value="'+$("#closing_time").val()+'"><td>'+$("#day option:selected").text()+'</td><td>'+$("#open_time").val()+'</td><td>'+$("#closing_time").val()+'</td></tr>';
+            $("#manage_store_time").append(html);
+          } else {
+              alert("You can add upto 7 days manage restaurant.");
+          }
+          
+        } else {
+          alert("Please select day, open time, closing time of restaurant.");
+        }
+    });
+
+    $(".add_submenu").click(function(){
+        if($("#submenu").val() != "" && $("#sub_price").val() != "") {
+            var appendCnt = $("#manage_menu_store tr").length -1;
+            console.log(appendCnt);
+            var html = '<tr><input type="hidden" name="manage_menu['+appendCnt+'][name]" value="'+$("#submenu").val()+'"><input type="hidden" name="manage_menu['+appendCnt+'][price]" value="'+$("#sub_price").val()+'"><td>'+$("#submenu").val()+'</td><td>'+$("#sub_price").val()+'</td><td><a href="javascript:void(0)" class="delete_sub_menu" data-id="0"><i class="fa fa-trash" aria-hidden="true"></i></a></td></tr>';
+            $("#manage_menu_store").append(html);
+          
+        } else {
+          alert("Please select price and submenu of menu.");
+        }
+    });
+$('body').on('click', '.delete_sub_menu', function () {
+      var result = confirm("Are you sure you want to delete this item?");
+      if (result) {
+         let item_id=$(this).data('id');
+         if(item_id>0) {
+           $.ajax({
+             url:"<?php echo url('/') ?>/submenu/delete",
+             type: "Get",
+             data:{item_id:item_id},
+             success: function (data) {
+                    
+                    $(this).parent().closest('tr').remove();
+              },
+           })
+         }
+         $(this).parent().closest('tr').remove();
+      }
+
+    })
   })
+  function leftPad(number, targetLength) {
+    var output = number + '';
+    while (output.length < targetLength) {
+        output = '0' + output;
+    }
+    return output;
+}
+
   $(document).ready(function() {
         var url = window.location; 
         var element = $('ul.sidebar-menu a').filter(function() {
@@ -195,27 +255,20 @@
 </script>
 
 <script>
-    CKEDITOR.replace('editor', {
-      fullPage: true,
-      extraPlugins: 'docprops',
-      // Disable content filtering because if you use full page mode, you probably
-      // want to  freely enter any HTML content in source mode without any limitations.
-      allowedContent: true,
-      height: 320,
-      removeButtons: 'PasteFromWord'
-    });
-    CKEDITOR.replace('editor1', {
-      fullPage: true,
-      extraPlugins: 'docprops',
-      // Disable content filtering because if you use full page mode, you probably
-      // want to  freely enter any HTML content in source mode without any limitations.
-      allowedContent: true,
-      height: 320,
-      removeButtons: 'PasteFromWord'
-    });
+    // CKEDITOR.replace('editor', {
+    //   fullPage: true,
+    //   extraPlugins: 'docprops',
+    //   allowedContent: true,
+    //   height: 320,
+    //   removeButtons: 'PasteFromWord'
+    // });
+    // CKEDITOR.replace('editor1', {
+    //   fullPage: true,
+    //   extraPlugins: 'docprops',
+    //   allowedContent: true,
+    //   height: 320,
+    //   removeButtons: 'PasteFromWord'
+    // });
   </script>
-@stack('third_party_scripts')
-
-@stack('page_scripts')
 </body>
 </html>

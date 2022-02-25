@@ -17,7 +17,7 @@
 
         <div class="card">
 
-            {!! Form::model($offer, ['route' => ['offers.update', $offer->id], 'method' => 'patch']) !!}
+            {!! Form::model($offer, ['route' => ['offers.update', $offer->id], 'method' => 'patch', 'enctype'=>"multipart/form-data"]) !!}
 
             <div class="card-body">
                 <div class="row">

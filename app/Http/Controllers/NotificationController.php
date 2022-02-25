@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Notification;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 use Flash;
 use Response;
 
@@ -37,7 +38,9 @@ class NotificationController extends AppBaseController
      */
     public function create()
     {
-        return view('notifications.create');
+        $roles =  Role::where('id', '!=',1)->pluck('name','id');
+        $roles =  $roles->prepend("select role", '');
+        return view('notifications.create', compact('roles'));
     }
 
     /**
@@ -104,7 +107,10 @@ class NotificationController extends AppBaseController
             return redirect(route('notifications.index'));
         }
 
-        return view('notifications.edit')->with('notification', $notification);
+        $roles =  Role::where('id', '!=',1)->pluck('name','id');
+        $roles =  $roles->prepend("select role", '');
+
+        return view('notifications.edit', compact('notification','roles'));
     }
 
     /**

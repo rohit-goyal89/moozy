@@ -20,7 +20,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email','role_id','mobile_no', 'password', 'status', 'restaurant_name', 'vat_no', 'address','email_verified_at','otp','social_id','social_type'
+        'name', 'email','role_id','mobile_no', 'password', 'status', 'restaurant_name', 'vat_no', 'address','email_verified_at','otp','social_id','social_type','device_id','is_notification'
     ];
 
     /**
@@ -95,5 +95,4 @@ class User extends Authenticatable
     public function userDriverRating() {
         return $this->hasMany(Models\UserRating::class, 'user_id');
     }
-
 }

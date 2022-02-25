@@ -8,6 +8,9 @@ use App\Repositories\MenuRepository;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
 use App\Category;
+use App\Models\Restaurant;
+use App\Models\Menu;
+use App\Models\SubMenu;
 use Flash;
 use Response;
 
@@ -30,10 +33,13 @@ class MenuController extends AppBaseController
      */
     public function index(Request $request)
     {
-        $menus = $this->menuRepository->all();
+        $where=[];
+         if(auth()->user()->role_id != 1) {
+            $where['restaurant_owner_id'] = auth()->user()->id;
+        }
+        $menus = Menu::where($where)->paginate(config('app.limit'));
 
-        return view('menus.index')
-            ->with('menus', $menus);
+        return view('menus.index', compact('menus'));
     }
 
     /**
@@ -45,6 +51,7 @@ class MenuController extends AppBaseController
     {
         $categories =  Category::where('status',1)->pluck('category','id');
         $selectedCat = [];
+        $where['status'] = 1;
         return view('menus.create', compact('categories', 'selectedCat'));
     }
 
@@ -58,6 +65,8 @@ class MenuController extends AppBaseController
     public function store(CreateMenuRequest $request)
     {
         $input = $request->all();
+
+        $input['restaurant_owner_id'] = auth()->user()->id;
         if(!empty($input['status'])) {
             $input['status'] = 1;
         } else {
@@ -71,7 +80,17 @@ class MenuController extends AppBaseController
         }
         $input['image'] = $imageName;
         $menu = $this->menuRepository->create($input);
-        $menu->categories()->attach($input['category']);
+         if(!empty($request->manage_menu)) {
+            $manageMenuModels = [];
+            foreach ($request->manage_menu as $manageMenu) {
+                $manageMenuModels[] = new SubMenu($manageMenu);
+            }
+            $menu->submenus()->saveMany($manageMenuModels);
+        }
+        if(!empty($request->category)) {
+            $menu->categories()->attach($input['category']);
+        }
+      
         Flash::success('Menu saved successfully.');
 
         return redirect(route('menus.index'));
@@ -106,8 +125,7 @@ class MenuController extends AppBaseController
      */
     public function edit($id)
     {
-        $menu = $this->menuRepository->find($id);
-
+        $menu = Menu::with(['submenus'])->find($id);
         if (empty($menu)) {
             Flash::error('Menu not found');
 
@@ -115,6 +133,7 @@ class MenuController extends AppBaseController
         }
         $categories =  Category::where('status',1)->pluck('category','id');
         $selectedCat = $menu->categories()->allRelatedIds();
+        $where['status'] = 1;
         return view('menus.edit', compact('menu', 'categories', 'selectedCat'));
     }
 
@@ -142,6 +161,7 @@ class MenuController extends AppBaseController
         } else {
             $input['status'] = 0;
         }
+        $input['restaurant_owner_id'] = auth()->user()->id;
         $imageName = "";
         if($request->photo) {
             $imageName = time().'.'.$request->photo->extension();  
@@ -153,6 +173,15 @@ class MenuController extends AppBaseController
         }
         
         $menu = $this->menuRepository->update($input, $id);
+         if(!empty($request->manage_menu)) {
+           $manageMenuModels = [];
+            foreach ($request->manage_menu as $manageMenu) {
+                $manageMenuModels[] = new SubMenu($manageMenu);
+            }
+            
+            Submenu::where('menu_id',$id)->delete();
+            $menu->submenus()->saveMany($manageMenuModels);
+        }
         $menu->categories()->sync($input['category']);
         Flash::success('Menu updated successfully.');
 
@@ -183,5 +212,15 @@ class MenuController extends AppBaseController
         Flash::success('Menu deleted successfully.');
 
         return redirect(route('menus.index'));
+    }
+
+    public function deleteSubmenu(Request $request) {
+        if($request->item_id) {
+            Submenu::where('id',$request->item_id)->delete();;
+            echo 1;
+        } else {
+            echo 0;
+        }
+        die;
     }
 }

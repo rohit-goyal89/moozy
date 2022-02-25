@@ -7,6 +7,7 @@ use App\Http\Requests\UpdatePageRequest;
 use App\Repositories\PageRepository;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 use Flash;
 use Response;
 
@@ -42,7 +43,9 @@ class PageController extends AppBaseController
      */
     public function create()
     {
-        return view('pages.create');
+        $roles =  Role::where('id', '!=',1)->pluck('name','id');
+        $roles =  $roles->prepend("select role", '');
+        return view('pages.create', compact('roles'));
     }
 
     /**
@@ -104,8 +107,9 @@ class PageController extends AppBaseController
 
             return redirect(route('pages.index'));
         }
-
-        return view('pages.edit')->with('page', $page);
+        $roles =  Role::where('id', '!=',1)->pluck('name','id');
+        $roles =  $roles->prepend("select role", '');
+        return view('pages.edit', compact('roles','page'));
     }
 
     /**

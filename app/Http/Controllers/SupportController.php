@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateSupportRequest;
 use App\Repositories\SupportRepository;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 use Flash;
 use Response;
 
@@ -42,7 +43,9 @@ class SupportController extends AppBaseController
      */
     public function create()
     {
-        return view('supports.create');
+        $roles =  Role::where('id', '!=',1)->pluck('name','id');
+        $roles =  $roles->prepend("select role", '');
+        return view('supports.create', compact('roles'));
     }
 
     /**
@@ -99,8 +102,9 @@ class SupportController extends AppBaseController
 
             return redirect(route('supports.index'));
         }
-
-        return view('supports.edit')->with('support', $support);
+        $roles =  Role::where('id', '!=',1)->pluck('name','id');
+        $roles =  $roles->prepend("select role", '');
+        return view('supports.edit', compact('support','roles'));
     }
 
     /**

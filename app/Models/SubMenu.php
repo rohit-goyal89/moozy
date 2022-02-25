@@ -48,7 +48,6 @@ class SubMenu extends Model
      */
     public static $rules = [
         'name' => 'required',
-        'price' => 'required',
-        'prepare_time' => 'required',
+        'price' => 'required'
     ];
 }

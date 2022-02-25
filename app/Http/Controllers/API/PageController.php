@@ -40,9 +40,10 @@ class PageController extends AppBaseController
      * @return \Illuminate\Http\Response 
      */ 
 
-    public function detail($slug) 
+    public function detail(Request $request) 
     { 
-        $page = Page::where('slug',$slug)->first(); 
+        $input = $request->all();
+        $page = Page::where('slug',$input['slug'])->first(); 
         $response['status'] = true;
         $response['data'] =  $page; 
         $response['message'] = "page detail";

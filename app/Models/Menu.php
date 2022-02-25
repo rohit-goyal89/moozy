@@ -26,8 +26,12 @@ class Menu extends Model
 
 
     public $fillable = [
+        'restaurant_owner_id',
         'title',
         'price',
+        'prepare_time',
+        'is_customizable',
+        'type',
         'prepare_time',
         'description',
         'image',
@@ -44,6 +48,8 @@ class Menu extends Model
         'price' => 'float',
         'description' => 'string',
         'prepare_time' => 'integer',
+        'is_customizable' => 'integer',
+        'type' => 'integer',
         'image' => 'string',
         'status' => 'integer'
     ];
@@ -57,6 +63,7 @@ class Menu extends Model
         'title' => 'required',
         'price' => 'required',
         'prepare_time' => 'required',
+        'is_customizable' => 'required',
     ];
 
     
@@ -76,4 +83,13 @@ class Menu extends Model
         return $this->belongsToMany(Category::class, 'menu_category');
     }
 
+    public function getImageAttribute($value)
+    {
+        return config('app.url').'/images/'.$value;
+    }
+
+    public function submenus()
+    {
+        return $this->hasMany(SubMenu::class, 'menu_id');
+    }
 }

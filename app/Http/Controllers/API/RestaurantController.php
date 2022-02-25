@@ -57,10 +57,16 @@ class RestaurantController extends AppBaseController
      */
     public function sortType(Request $request)
     {
-        $response['sort'] = 'single';
-        $response['status'] = true;
-        $response['data'] =  config('app.sort'); 
-        $response['message'] = "sort type list";
+        $response[0]['title'] = 'Sort';
+        $response[0]['isSelected'] = true;
+        $response[0]['isOption'] = true;
+        $response[0]['subFilter'] = config('app.sort');
+        $response[1]['title'] = 'Cuisines';
+        $response[1]['isSelected'] = false;
+        $response[1]['isOption'] = false;
+        $response[1]['subFilter'] = Cuisine::where('status',1)->get();
+        // $response['status'] = true; 
+        // $response['message'] = "sort type list";
         return response()->json($response, $this-> successStatus);
     }
     /**
@@ -81,8 +87,16 @@ class RestaurantController extends AppBaseController
             $response['message'] = "lat and long require to find nearest restaurant";
             return response()->json($response, 200);            
         }
-        $offset = $input['offset'] ?? 0;
-        $restaurants = Restaurant::with(['restaurantDetail'])->selectRaw("id, name, address, latitude, longitude,
+        if(isset($input['page']) && $input['page'] > 1) {
+             $offset = ($input['page'] - 1)*config('app.limit');
+        } else {
+            $offset = 0;
+        }
+        $userId = $input['user_id'] ?? 0;
+        $restaurants = Restaurant::with(['restaurantDetail','ratings','favouriteRestaurants' => function($q) use ($userId)
+            {
+              $q->wherePivot('user_id','=', $userId);
+            }])->selectRaw("id, name, address,restaurant_type,prepare_time,latitude, longitude,
                      ( 6371000 * acos( cos( radians(?) ) *
                        cos( radians( latitude ) )
                        * cos( radians( longitude ) - radians(?)
@@ -97,8 +111,27 @@ class RestaurantController extends AppBaseController
         ->get();
         if(!empty($restaurants)) {
             foreach($restaurants as &$restaurant) {
+                $hours = floor($restaurant['prepare_time']/60);
+                $minutes = $restaurant['prepare_time']%60;
+                $prepare_time = "";
+                if($hours > 0) {
+                    $prepare_time .= $hours.' hour ';
+                }
+                if($minutes > 0) {
+                    $prepare_time .= $minutes.' minutes';
+                }
+                $restaurant["food_time"] = $prepare_time;
                 $restaurant["avgRating"] = $restaurant->avgRating();
+                 $restaurant["no_of_user_rated"] = count($restaurant['ratings']);
+                if(($restaurant['favouriteRestaurants'])->isEmpty()) {
+                    $restaurant["is_favourite"] = 0;
+                } else {
+                    $restaurant["is_favourite"] = 1;
+                }
 
+                $restaurant["food_type"] = config('app.restaurant_type')[$restaurant["restaurant_type"]];
+              unset($restaurant['favouriteRestaurants']);
+              unset($restaurant['ratings']);
             }
         }
         $response['status'] = true;
@@ -119,12 +152,19 @@ class RestaurantController extends AppBaseController
     {
         $input = $request->all();
 
-        $offset = $input['offset'] ?? 0;
+        if(isset($input['page']) && $input['page'] > 1) {
+            $offset = ($input['page'] - 1)*config('app.limit');
+        } else {
+            $offset = 0;
+        }
 
         $category = $input['category'] ?? 0;
+        $restaurant = $request->restaurant_id ?? 0;
         if($category) {
-
-            $menus = Menu::whereHas('categories', function($q) use($category){ 
+            $menus = Menu::with(['restaurants' => function($q) use ($restaurant)
+            {
+              $q->wherePivot('restaurant_id','=', $restaurant);
+            },'submenus'])->whereHas('categories', function($q) use($category){ 
                                 $q->where("category_id","=",$category); 
                             })->where('status', 1)
             ->orderBy("created_at",'desc')
@@ -132,7 +172,7 @@ class RestaurantController extends AppBaseController
             ->limit(config('app.limit'))
             ->get();
         } else {
-             $menus = Menu::where('status',1);
+             $menus = Menu::with(['restaurants','submenus'])->where('status',1);
             if(!empty($input['search'])) {
                 $search = $input['search'];
                 $menus = $menus->where('title', 'Like', "%$search%");
@@ -141,7 +181,13 @@ class RestaurantController extends AppBaseController
             ->limit(config('app.limit'))
             ->get();
         }
-       
+        if(!empty($menus)) {
+            foreach($menus as &$menu) {
+                 $menu["restaurant_id"] = (count($menu['restaurants'])>0) ? $menu['restaurants'][0]['id']:0;
+                 unset($menu['restaurants']);
+            }
+
+        }
 
         $response['status'] = true;
         $response['data'] =  $menus; 
@@ -159,8 +205,16 @@ class RestaurantController extends AppBaseController
     public function popularRestaurant(Request $request)
     {
         $input = $request->all();
-        $offset = $input['offset'] ?? 0;
-        $restaurants = Restaurant::with(['restaurantDetail'])->select("id", "name", "address")
+        if(isset($input['page']) && $input['page'] > 1) {
+             $offset = ($input['page'] - 1)*config('app.limit');
+        } else {
+            $offset = 0;
+        }
+         $userId = $input['user_id'] ?? 0;
+        $restaurants = Restaurant::with(['restaurantDetail','ratings','favouriteRestaurants' => function($q) use ($userId)
+            {
+              $q->wherePivot('user_id','=', $userId);
+            }])->select("id", "name", "address", "restaurant_type", "prepare_time")
         ->where('status', '=', 1)
         ->orderBy("created_at",'desc')
         ->offset($offset)
@@ -168,7 +222,26 @@ class RestaurantController extends AppBaseController
         ->get();
         if(!empty($restaurants)) {
             foreach($restaurants as &$restaurant) {
+                 $hours = floor($restaurant['prepare_time']/60);
+                $minutes = $restaurant['prepare_time']%60;
+                $prepare_time = "";
+                if($hours > 0) {
+                    $prepare_time .= $hours.' hour ';
+                }
+                if($minutes > 0) {
+                    $prepare_time .= $minutes.' minutes';
+                }
+                $restaurant["food_time"] = $prepare_time;
+                $restaurant["no_of_user_rated"] = count($restaurant['ratings']);
+                $restaurant["food_type"] = config('app.restaurant_type')[$restaurant["restaurant_type"]];
                 $restaurant["avgRating"] = $restaurant->avgRating();
+                if(($restaurant['favouriteRestaurants'])->isEmpty()) {
+                    $restaurant["is_favourite"] = 0;
+                } else {
+                    $restaurant["is_favourite"] = 1;
+                }
+              unset($restaurant['favouriteRestaurants']);
+              unset($restaurant['ratings']);
 
             }
         }
@@ -188,8 +261,16 @@ class RestaurantController extends AppBaseController
     public function frequentlyOrderRestaurant(Request $request)
     {
         $input = $request->all();
-        $offset = $input['offset'] ?? 0;
-        $restaurants = Restaurant::with(['restaurantDetail'])->select("id", "name", "address")
+        if(isset($input['page']) && $input['page'] > 1) {
+             $offset = ($input['page'] - 1)*config('app.limit');
+        } else {
+            $offset = 0;
+        }
+        $userId = $input['user_id']??0;
+        $restaurants = Restaurant::with(['restaurantDetail','ratings','favouriteRestaurants' => function($q) use ($userId)
+            {
+              $q->wherePivot('user_id','=', $userId);
+            }])->select("id", "name", "address", "restaurant_type", "prepare_time")
         ->where('status', '=', 1)
         ->orderBy("created_at",'desc')
         ->offset($offset)
@@ -197,8 +278,26 @@ class RestaurantController extends AppBaseController
         ->get();
         if(!empty($restaurants)) {
             foreach($restaurants as &$restaurant) {
+                $hours = floor($restaurant['prepare_time']/60);
+                $minutes = $restaurant['prepare_time']%60;
+                $prepare_time = "";
+                if($hours > 0) {
+                    $prepare_time .= $hours.' hour ';
+                }
+                if($minutes > 0) {
+                    $prepare_time .= $minutes.' minutes';
+                }
+                $restaurant["food_time"] = $prepare_time;
+                $restaurant["no_of_user_rated"] = count($restaurant['ratings']);
+                $restaurant["food_type"] = config('app.restaurant_type')[$restaurant["restaurant_type"]];
                 $restaurant["avgRating"] = $restaurant->avgRating();
-
+                if(($restaurant['favouriteRestaurants'])->isEmpty()) {
+                    $restaurant["is_favourite"] = 0;
+                } else {
+                    $restaurant["is_favourite"] = 1;
+                }
+                unset($restaurant['favouriteRestaurants']);
+                unset($restaurant['ratings']);
             }
         }
         $response['status'] = true;
@@ -217,8 +316,16 @@ class RestaurantController extends AppBaseController
     public function restaurantList(Request $request)
     {
         $input = $request->all();
-        $offset = $input['offset'] ?? 0;
-        $restaurants = Restaurant::with(['restaurantDetail'])->select("id", "name", "address");
+        if(isset($input['page']) && $input['page'] > 1) {
+             $offset = ($input['page'] - 1)*config('app.limit');
+        } else {
+            $offset = 0;
+        }
+        $userId = $input['user_id']??0;
+        $restaurants = Restaurant::with(['restaurantDetail','ratings','favouriteRestaurants' => function($q) use ($userId)
+            {
+              $q->wherePivot('user_id','=', $userId);
+            }])->select("id", "name", "address", "restaurant_type", "prepare_time");
         if(!empty($input['search'])) {
             $search =$input['search'];
             $restaurants = $restaurants->where('name', 'Like', "%$search%");
@@ -230,8 +337,26 @@ class RestaurantController extends AppBaseController
         ->get();
         if(!empty($restaurants)) {
             foreach($restaurants as &$restaurant) {
+                $hours = floor($restaurant['prepare_time']/60);
+                $minutes = $restaurant['prepare_time']%60;
+                $prepare_time = "";
+                if($hours > 0) {
+                    $prepare_time .= $hours.' hour ';
+                }
+                if($minutes > 0) {
+                    $prepare_time .= $minutes.' minutes';
+                }
+                $restaurant["food_time"] = $prepare_time;
+                $restaurant["no_of_user_rated"] = count($restaurant['ratings']);
+                $restaurant["food_type"] = config('app.restaurant_type')[$restaurant["restaurant_type"]];
                 $restaurant["avgRating"] = $restaurant->avgRating();
-
+                if(($restaurant['favouriteRestaurants'])->isEmpty()) {
+                    $restaurant["is_favourite"] = 0;
+                } else {
+                    $restaurant["is_favourite"] = 1;
+                }
+              unset($restaurant['favouriteRestaurants']);
+              unset($restaurant['ratings']);
             }
         }
         $response['status'] = true;
@@ -250,7 +375,8 @@ class RestaurantController extends AppBaseController
         $input = $request->all();
         $validator = Validator::make($request->all(), [ 
             'user_id' => 'required', 
-            'restaurant_id' => 'required'
+            'restaurant_id' => 'required',
+            ''
         ]);
         if ($validator->fails()) { 
             $response['status'] = false;
@@ -260,11 +386,16 @@ class RestaurantController extends AppBaseController
         }
         $input['status'] = 1;
         $user = User::where('id',$input['user_id'])->first();
-        $user->favouriteRestaurants()->attach($input['restaurant_id']);
-        $userInfo = User::where('id',$input['user_id'])->with(['favouriteRestaurants'])->first();
+        if($input['type'] == 1) {
+            $user->favouriteRestaurants()->detach($input['restaurant_id']);
+             $response['message'] = "Restaurant removed from your favourite list.";
+        } else {
+            $user->favouriteRestaurants()->attach($input['restaurant_id']);
+            $response['message'] = "Restaurant Added in your favourite list.";
+        } 
+       
         $response['status'] = true;
-        $response['data'] =  $userInfo; 
-        $response['message'] = "Restaurant Added in your favourite list.";
+        $response['data'] =  []; 
         return response()->json($response, $this-> successStatus);
     }
 
@@ -343,11 +474,15 @@ class RestaurantController extends AppBaseController
             $response['message'] = "please select user.";
             return response()->json($response, 200);            
         }
-        $offset = $input['offset'] ?? 0;
-        $restaurants = Restaurant::with(['restaurantDetail'])
+         if(isset($input['page']) && $input['page'] > 1) {
+             $offset = ($input['page'] - 1)*config('app.limit');
+        } else {
+            $offset = 0;
+        }
+        $restaurants = Restaurant::with(['restaurantDetail','ratings'])
                         ->whereHas('favouriteRestaurants', function($q) use($input){ 
                             $q->where("user_restaurant.user_id","=",$input['user_id']); 
-                        })->select("id", "name", "address");
+                        })->select("id", "name", "address", "restaurant_type", "prepare_time");
         if(!empty($input['search'])) {
             $search =$input['search'];
             $restaurants = $restaurants->where('name', 'Like', "%$search%");
@@ -359,6 +494,18 @@ class RestaurantController extends AppBaseController
         ->get();
         if(!empty($restaurants)) {
             foreach($restaurants as &$restaurant) {
+                $hours = floor($restaurant['prepare_time']/60);
+                $minutes = $restaurant['prepare_time']%60;
+                $prepare_time = "";
+                if($hours > 0) {
+                    $prepare_time .= $hours.' hour ';
+                }
+                if($minutes > 0) {
+                    $prepare_time .= $minutes.' minutes';
+                }
+                $restaurant["food_time"] = $prepare_time;
+                $restaurant["no_of_user_rated"] = count($restaurant['ratings']);
+                $restaurant["food_type"] = config('app.restaurant_type')[$restaurant["restaurant_type"]];
                 $restaurant["avgRating"] = $restaurant->avgRating();
                 $restaurant["is_favourite"] = 1;
 
@@ -372,25 +519,76 @@ class RestaurantController extends AppBaseController
     }
 
 
-    public function view($id, Request $request)
+    public function view( Request $request)
     {
-        $restaurants = Restaurant::with(['restaurantDetail','offers'])->select("id", "name", "address");
+       $validator = Validator::make($request->all(), [ 
+            'restaurant_id' => 'required',
+            'day' => 'required'
+        ]);
+        if ($validator->fails()) { 
+            $response['status'] = false;
+            $response['data'] =  ''; 
+            $response['message'] = "please select restaurant and day.";
+            return response()->json($response, 200);            
+        }
+        $day = $request->day;
+        $userId = $request->user_id??0;
+        $restaurants = Restaurant::with(['restaurantDetail','offers', 'manageTime'=> function($q) use ($day)
+            {
+              $q->where('day','=', $day);
+            },'categories','ratings','favouriteRestaurants' => function($q) use ($userId)
+            {
+              $q->wherePivot('user_id','=', $userId);
+            }])->select("id", "name", "address", "restaurant_type", "prepare_time");
         
-        $restaurants = $restaurants->where('id', '=', $id)
+        $restaurants = $restaurants->where('id', '=', $request->restaurant_id)
         ->orderBy("created_at",'desc')
         ->get();
         if(!empty($restaurants)) {
             foreach($restaurants as &$restaurant) {
+                  $hours = floor($restaurant['prepare_time']/60);
+                $minutes = $restaurant['prepare_time']%60;
+                $prepare_time = "";
+                if($hours > 0) {
+                    $prepare_time .= $hours.' hour ';
+                }
+                if($minutes > 0) {
+                    $prepare_time .= $minutes.' minutes';
+                }
+                $restaurant["food_time"] = $prepare_time;
+                $restaurant["no_of_user_rated"] = count($restaurant['ratings']);
+                $restaurant["food_type"] = config('app.restaurant_type')[$restaurant["restaurant_type"]];
                 $restaurant["avgRating"] = $restaurant->avgRating();
-
+                $restaurant["day"] = (count($restaurant['manageTime'])>0) ? $restaurant['manageTime'][0]['day'] : '';
+                $restaurant["open_time"] = (count($restaurant['manageTime'])>0) ? $restaurant['manageTime'][0]['open_time'] : '';
+                 $restaurant["close_time"] = (count($restaurant['manageTime'])>0) ? $restaurant['manageTime'][0]['close_time'] : '';
+                if(($restaurant['favouriteRestaurants'])->isEmpty()) {
+                    $restaurant["is_favourite"] = 0;
+                } else {
+                    $restaurant["is_favourite"] = 1;
+                }
+                 unset($restaurant['manageTime']);
+                 unset($restaurant['favouriteRestaurants']);
             }
         }
-        $categories = Category::where('status',1)->get();
+       // $categories = Category::where('status',1)->get();
         $response['status'] = true;
-        $response['categories'] = $categories;
         $response['data'] =  $restaurants[0]; 
         $response['message'] = "restaurants list";
         return response()->json($response, $this-> successStatus);
     }
     
+    public function restaurantMenu( Request $request)
+    {
+       $validator = Validator::make($request->all(), [ 
+            'restaurant_id' => 'required',
+            'category_id' => 'required'
+        ]);
+        if ($validator->fails()) { 
+            $response['status'] = false;
+            $response['data'] =  ''; 
+            $response['message'] = "please select restaurant and category.";
+            return response()->json($response, 200);            
+        }
+    }
 }

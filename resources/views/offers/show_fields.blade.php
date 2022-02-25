@@ -1,7 +1,6 @@
 <!-- Offer Field -->
 <div class="col-sm-6">
     {!! Form::label('offer', 'Offer:') !!}
-    <p>{{ $offer->offer }}</p>
 </div>
 
 <!-- Discount Field -->

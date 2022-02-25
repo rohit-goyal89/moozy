@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use \Illuminate\Http\Request;
+
 
 class LoginController extends Controller
 {
@@ -26,7 +28,7 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = RouteServiceProvider::HOME;
+    //protected $redirectTo = RouteServiceProvider::HOME;
 
     /**
      * Create a new controller instance.
@@ -37,4 +39,22 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
     }
+
+    /**
+     * [authenticated is used to redirect user after login based on role]
+     * @param  Request $request [request object]
+     * @param  [type]  $user    [user object to check user role]
+     * @return [type]           [return type]
+     */
+    protected function authenticated(Request $request, $user)
+    {
+
+        if($user->role_id == 1) {
+            return redirect()->intended('/home'); // it will be according to your routes.
+
+        } else if($user->role_id == 2) {
+            return redirect()->intended('/participant/home'); // it also be according to your need and routes
+        }
+    }
+
 }

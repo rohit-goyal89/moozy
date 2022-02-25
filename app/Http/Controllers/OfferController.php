@@ -65,6 +65,13 @@ class OfferController extends AppBaseController
         } else {
             $input['status'] = 0;
         }
+        $imageName = "";
+        if($request->offer_banner) {
+            $imageName = time().'.'.$request->offer_banner->extension();  
+
+            $request->offer_banner->move(public_path('images'), $imageName);
+        }
+        $input['offer_banner'] = $imageName;
         $offer = $this->offerRepository->create($input);
 
         $offer->restaurants()->attach($input['restaurant']);
@@ -141,7 +148,16 @@ class OfferController extends AppBaseController
         } else {
             $input['status'] = 0;
         }
+         $imageName = "";
+        if($request->offer_banner) {
+            $imageName = time().'.'.$request->offer_banner->extension();  
 
+            $request->offer_banner->move(public_path('images'), $imageName);
+             $input['offer_banner'] = $imageName;
+        } else {
+            unset($input['offer_banner']);
+        }
+       
         $offer = $this->offerRepository->update($input, $id);
 
         $offer->restaurants()->sync($input['restaurant']);
