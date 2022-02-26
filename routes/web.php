@@ -44,6 +44,8 @@ Route::group(['middleware' => ['auth']], function() {
     Route::resource('videos', 'VideoController');
     Route::get('user_rating', 'RatingReviewController@userRating')->name('user_rating');
     Route::get('restaurant_rating', 'RatingReviewController@restaurantRating')->name('restaurant_rating');
+    Route::resource('attributes', 'AttributeController');
+    Route::resource('attributeValues', 'AttributeValueController');
 });
 
 Route::group(['prefix'=>'participant'], function() {
@@ -56,3 +58,4 @@ Route::group(['prefix'=>'participant'], function() {
     Route::get('user_rating', 'RatingReviewController@userRating')->name('user_rating');
     Route::get('restaurant_rating', 'RatingReviewController@restaurantRating')->name('restaurant_rating');
 });
+

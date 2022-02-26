@@ -7,10 +7,15 @@ use App\Http\Requests\UpdateRestaurantRequest;
 use App\Repositories\RestaurantRepository;
 use App\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
+use App\Models\Attribute;
+use App\Models\Cart;
 use App\Models\Restaurant;
 use App\Models\RestaurantDetail;
 use App\Models\Menu;
 use App\Models\Cuisine;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\OrderItemSubmenu;
 use App\User;
 use App\Category;
 use DB;
@@ -164,7 +169,7 @@ class RestaurantController extends AppBaseController
             $menus = Menu::with(['restaurants' => function($q) use ($restaurant)
             {
               $q->wherePivot('restaurant_id','=', $restaurant);
-            },'submenus'])->whereHas('categories', function($q) use($category){ 
+            },'attributes.attributeValues'])->whereHas('categories', function($q) use($category){ 
                                 $q->where("category_id","=",$category); 
                             })->where('status', 1)
             ->orderBy("created_at",'desc')
@@ -172,7 +177,7 @@ class RestaurantController extends AppBaseController
             ->limit(config('app.limit'))
             ->get();
         } else {
-             $menus = Menu::with(['restaurants','submenus'])->where('status',1);
+             $menus = Menu::with(['restaurants','attributes.attributeValues'])->where('status',1);
             if(!empty($input['search'])) {
                 $search = $input['search'];
                 $menus = $menus->where('title', 'Like', "%$search%");
@@ -214,7 +219,7 @@ class RestaurantController extends AppBaseController
         $restaurants = Restaurant::with(['restaurantDetail','ratings','favouriteRestaurants' => function($q) use ($userId)
             {
               $q->wherePivot('user_id','=', $userId);
-            }])->select("id", "name", "address", "restaurant_type", "prepare_time")
+            }])->select("id", "name", "address", "city", "town", "postcode","restaurant_type", "prepare_time")
         ->where('status', '=', 1)
         ->orderBy("created_at",'desc')
         ->offset($offset)
@@ -270,7 +275,7 @@ class RestaurantController extends AppBaseController
         $restaurants = Restaurant::with(['restaurantDetail','ratings','favouriteRestaurants' => function($q) use ($userId)
             {
               $q->wherePivot('user_id','=', $userId);
-            }])->select("id", "name", "address", "restaurant_type", "prepare_time")
+            }])->select("id", "name", "address","city", "town", "postcode", "restaurant_type", "prepare_time")
         ->where('status', '=', 1)
         ->orderBy("created_at",'desc')
         ->offset($offset)
@@ -325,7 +330,7 @@ class RestaurantController extends AppBaseController
         $restaurants = Restaurant::with(['restaurantDetail','ratings','favouriteRestaurants' => function($q) use ($userId)
             {
               $q->wherePivot('user_id','=', $userId);
-            }])->select("id", "name", "address", "restaurant_type", "prepare_time");
+            }])->select("id", "name", "address","city", "town", "postcode", "restaurant_type", "prepare_time");
         if(!empty($input['search'])) {
             $search =$input['search'];
             $restaurants = $restaurants->where('name', 'Like', "%$search%");
@@ -482,7 +487,7 @@ class RestaurantController extends AppBaseController
         $restaurants = Restaurant::with(['restaurantDetail','ratings'])
                         ->whereHas('favouriteRestaurants', function($q) use($input){ 
                             $q->where("user_restaurant.user_id","=",$input['user_id']); 
-                        })->select("id", "name", "address", "restaurant_type", "prepare_time");
+                        })->select("id", "name", "address","city", "town", "postcode", "restaurant_type", "prepare_time");
         if(!empty($input['search'])) {
             $search =$input['search'];
             $restaurants = $restaurants->where('name', 'Like', "%$search%");
@@ -539,7 +544,7 @@ class RestaurantController extends AppBaseController
             },'categories','ratings','favouriteRestaurants' => function($q) use ($userId)
             {
               $q->wherePivot('user_id','=', $userId);
-            }])->select("id", "name", "address", "restaurant_type", "prepare_time");
+            }])->select("id", "name", "address", "city", "town", "postcode","restaurant_type", "prepare_time");
         
         $restaurants = $restaurants->where('id', '=', $request->restaurant_id)
         ->orderBy("created_at",'desc')
@@ -577,18 +582,200 @@ class RestaurantController extends AppBaseController
         $response['message'] = "restaurants list";
         return response()->json($response, $this-> successStatus);
     }
-    
-    public function restaurantMenu( Request $request)
-    {
-       $validator = Validator::make($request->all(), [ 
+
+    public function createCart(Request $request) {
+        $validator = Validator::make($request->all(), [ 
             'restaurant_id' => 'required',
-            'category_id' => 'required'
+            'menu_id' => 'required'
+        ]);
+
+       if ($validator->fails()) { 
+            $response['status'] = false;
+            $response['data'] =  ''; 
+            $response['message'] = "please select restaurant and menu.";
+            return response()->json($response, 200);            
+        }
+        $searchItems = DB::table('cart')->where('user_id', '=', auth()->guard('api')->user()->id)->where('restaurant_id', '=', $request->restaurant_id)->where('menu_id', '=', $request->menu_id)->count();
+        if($searchItems>0) {
+            DB::table('cart')->where('user_id', '=', auth()->guard('api')->user()->id)->where('restaurant_id', '=', $request->restaurant_id)->where('menu_id', '=', $request->menu_id)->delete();
+        }
+        $searchForItems = DB::table('cart')->where('user_id', '=', auth()->guard('api')->user()->id)->first();
+        if($searchForItems->restaurant_id !=  $request->restaurant_id) {
+            $response['status'] = false;
+            $response['data'] =  ''; 
+            $response['message'] = "Oops, you have to clear previous restaurant item from your cart if you proceed with other restaurant items.";
+            return response()->json($response, 200);    
+        }
+
+        DB::table('cart')->insert([
+            'user_id' => auth()->guard('api')->user()->id,
+            'session_id' => 0,
+            'restaurant_id' => $request->restaurant_id,
+            'menu_id' => $request->menu_id,
+            'instruction' => $request->instruction,
+            'quantity' => $request->qty,
+            'price' => $request->price,
+            'sub_item' => implode(',',$request->sub_item),
+        ]);
+
+        $response['status'] = true;
+        $response['data'] =  []; 
+        $response['message'] = "item insert into cart successfully.";
+
+        return response()->json($response, $this-> successStatus);
+    }
+
+    public function updateCart(Request $request) {
+        $validator = Validator::make($request->all(), [ 
+            'menu_id' => 'required',
+            'type'=>'required'
+        ]);
+
+       if ($validator->fails()) { 
+            $response['status'] = false;
+            $response['data'] =  ''; 
+            $response['message'] = "please select menu and update type.";
+            return response()->json($response, 200);            
+        }
+        if($request->type == 1) {
+            DB::table('cart')->where('user_id', auth()->guard('api')->user()->id)->where('menu_id',$request->menu_id)->increment('quantity',1);
+        } else {
+             DB::table('cart')->where('user_id', auth()->guard('api')->user()->id)->where('menu_id',$request->menu_id)->decrement('quantity',1);
+        }
+
+        $response['status'] = true;
+        $response['data'] =  []; 
+        $response['message'] = "cart items updated successfully.";
+        
+        return response()->json($response, $this-> successStatus);
+    }
+
+    public function cartOrder(Request $request){
+        $user =auth()->guard('api')->user()->id;
+        $restaurants = Restaurant::whereHas('cart', function($q) use ($user)
+            {
+              $q->where('user_id','=', $user);
+            })->with('cart.menus')->select("id", "name", "address", "city", "town", "postcode", "restaurant_type", "prepare_time")->orderBy("created_at",'desc')
+        ->get();
+        if(!empty($restaurants[0]['cart'])) {
+            foreach($restaurants[0]['cart'] as &$cart) {
+                $subMenu = explode(',', $cart->sub_item);
+                if(!empty($subMenu)) {
+                    $attributes = Attribute::with('attributeValues')->whereIn('id',$subMenu)->get();
+                    $cart->submenus=$attributes;
+                } else {
+                     $cart->submenus= [];
+                }
+               
+                $cart->menu = $cart->menus->title;
+                $cart->price = $cart->menus->price;
+                $cart->description = $cart->menus->description;
+                unset($cart->menus);
+            }
+        }
+        $response['status'] = true;
+        $response['data'] =  $restaurants; 
+        $response['message'] = "cart items updated successfully.";
+        
+        return response()->json($response, $this-> successStatus);
+    }
+
+    public function placeOrder(Request $request) {
+         $user =auth()->guard('api')->user()->id;
+         $validator = Validator::make($request->all(), [ 
+            'restaurant_id' => 'required'
+        ]);
+
+       if ($validator->fails()) { 
+            $response['status'] = false;
+            $response['data'] =  ''; 
+            $response['message'] = "please select restaurant and cart.";
+            return response()->json($response, 200);            
+        }
+        $order = Order::create([
+             'user_id' => $user,
+            'restaurant_id' => $request->restaurant_id,
+            'address_id' => $request->address_id,
+            'order_amount'=> $request->order_amount,
+            'discount'=> $request->discount,
+            'tax'=> $request->tax??0,
+            'delivery_fee'=> $request->delivery_fee??0,
+            'total_amount'=> $request->total_amt??0,
+            'order_status'=> 1,
+            'order_notes'=> $request->order_notes,
+            'delivery_notes'=> $request->deliver_note,
+            'promo_code'=> $request->promo_code,
+            'discount_video_id'=> $request->video_id
+        ]);
+        $cartItems = Cart::where('user_id',$user)->where('restaurant_id',$request->restaurant_id)->get();
+       if(!empty($cartItems)) {
+         foreach($cartItems as $key => $items) {
+            $itemArr = [];
+            $orderItems['order_id'] = $order->id;
+            $orderItems['menu_id'] = $items->menu_id;
+            $orderItems['amount'] = $items->price;
+            $orderItems['qty'] = $items->quantity;
+            $orderItems['instuction'] = $items->instruction;
+            $itemArr[] = new OrderItem($orderItems);
+            $subMenu = explode(',',$items->sub_item);
+            if(!empty($subMenu)) {
+                foreach($subMenu as $key1 => $subItems) {
+                    $subItemArr = [];
+                    $orderSubItems['order_id'] = $order->id;
+                    $orderSubItems['menu_id'] = $items->menu_id;
+                    $orderSubItems['submenu_id'] = $subItems;
+                    $subItemArr[] = new OrderItemSubmenu($orderSubItems);
+                }
+                $order->orderItemMenus()->saveMany($subItemArr);
+            }
+         }
+         $order->orderItems()->saveMany($itemArr);
+        
+       }
+        $response['status'] = true;
+        $response['data'] =  $order; 
+        $response['message'] = "Your order placed successfully.";
+        
+        return response()->json($response, $this-> successStatus);
+    }
+
+    public function orderDetail(Request $request){
+        $user =auth()->guard('api')->user()->id;
+        $validator = Validator::make($request->all(), [ 
+            'restaurant_id' => 'required'
         ]);
         if ($validator->fails()) { 
             $response['status'] = false;
             $response['data'] =  ''; 
-            $response['message'] = "please select restaurant and category.";
+            $response['message'] = "please place an order.";
             return response()->json($response, 200);            
         }
+        $order = Order::with(['userAddress','restaurant','orderItems.menus','orderItemMenus.attributes.attributeValues'])->where(['user_id'=>$user,'restaurant_id'=>$request->restaurant_id])->get();
+
+        if(!empty($order[0]['orderItems'])) {
+
+            foreach($order[0]['orderItems'] as &$order_items) {
+                $order_items->menu = $order_items->menus->title;
+                $order_items->price = $order_items->menus->price;
+                $order_items->description = $order_items->menus->description;
+                unset($order_items->menus);
+                if(!empty($order[0]['orderItemMenus'])) {
+                     $submenu=array();
+                    foreach($order[0]['orderItemMenus'] as &$order_item_menus) {
+                        
+                        if($order_items->menu_id == $order_item_menus->menu_id) {
+                            array_push($submenu, $order_item_menus->attributes);
+                        }
+                        $order_items->submenu = $submenu;
+                    }
+                }
+            }
+             unset($order[0]['orderItemMenus']);
+        }
+         $response['status'] = true;
+        $response['data'] =  $order; 
+        $response['message'] = "Your order placed successfully.";
+        
+        return response()->json($response, $this-> successStatus);
     }
 }

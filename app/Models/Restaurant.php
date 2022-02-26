@@ -161,4 +161,9 @@ class Restaurant extends Model
     {
         return $this->belongsToMany(Category::class, 'restaurant_category');
     }
+
+      public function cart()
+    {
+        return $this->hasMany(Cart::class, 'restaurant_id');
+    }
 }

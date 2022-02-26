@@ -162,3 +162,21 @@
      </li>
    </ul>
  </li>
+<li class="nav-item">
+    <a href="{{ route('attributes.index') }}"
+       class="nav-link {{ Request::is('attributes*') ? 'active' : '' }}">
+       <i class="nav-icon fas fa-tachometer-alt"></i>
+        <p>Attributes</p>
+    </a>
+</li>
+
+
+<li class="nav-item">
+    <a href="{{ route('attributeValues.index') }}"
+       class="nav-link {{ Request::is('attributeValues*') ? 'active' : '' }}">
+       <i class="nav-icon fas fa-tachometer-alt"></i>
+        <p>Attribute Values</p>
+    </a>
+</li>
+
+

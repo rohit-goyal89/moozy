@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+    dd($request->user()) ;
 });
 Auth::routes(['verify' => true]);
 
@@ -39,6 +39,8 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::post('get_address', 'UserController@getAddress');
     Route::post('logout', 'UserController@logout');
 
+    Route::get('videos', 'UserController@videos');
+    Route::post('video', 'UserController@video');
     Route::get('support', 'UserController@support');
     Route::get('sort_type', 'RestaurantController@sortType');
     Route::post('notifications', 'UserController@notifications');
@@ -58,4 +60,9 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::post('my_favourite_restaurant', 'RestaurantController@myFavouriteRestaurant');
     Route::post('restaurant', 'RestaurantController@view');
     Route::post('add_driver_review_rating', 'UserController@addDriverReviewRating');
+    Route::post('create_cart', 'RestaurantController@createCart');
+    Route::post('update_cart', 'RestaurantController@updateCart');
+    Route::post('cart_order', 'RestaurantController@cartOrder');
+    Route::post('place_order', 'RestaurantController@placeOrder');
+    Route::post('order_detail', 'RestaurantController@orderDetail');
 });

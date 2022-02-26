@@ -240,6 +240,11 @@ return [
         2=>"Non-Veg"
 
     ],
+      'option' => [
+        "0"=>"No",
+        1=>"Yes"
+
+    ],
     'coupon_type' => [
         ""=>"Select",
         1=>"Single",

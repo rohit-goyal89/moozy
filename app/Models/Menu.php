@@ -92,4 +92,9 @@ class Menu extends Model
     {
         return $this->hasMany(SubMenu::class, 'menu_id');
     }
+
+    public function attributes()
+    {
+        return $this->belongsToMany(Attribute::class, 'menu_attribute');
+    }
 }

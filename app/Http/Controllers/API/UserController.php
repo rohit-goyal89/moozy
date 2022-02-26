@@ -9,6 +9,7 @@ use App\Models\Offer;
 use App\UserAddress; 
 use App\UserDetail; 
 use App\Notification; 
+use App\Video; 
 use App\Models\Support; 
 use App\Models\UserRating; 
 use Illuminate\Support\Facades\Auth; 
@@ -657,6 +658,63 @@ class UserController extends Controller
         return response()->json($response, $this-> successStatus); 
     }
 
+    /** 
+     * video api 
+     * 
+     * @return \Illuminate\Http\Response 
+     */ 
+
+    public function videos(Request $request) 
+    { 
+        $req=$request->all();
+        if(isset($req['page']) && $req['page'] > 1) {
+            $offset = 10*($req['page']-1);
+        } else {
+            $offset = 0;
+        }
+        $video = Video::offset($offset)
+            ->limit(config('app.limit'))
+            ->get(); 
+        $total = Video::where('status',1)->count();
+        if($total > config('app.limit')) {
+            $page = floor($total/10);
+        } else {
+             $page = $total;
+        }
+        if(($total > config('app.limit')) && ($total%config('app.limit') > 1)) {
+          $page = $page + 1;  
+        }
+
+        $response['totalPages'] = $page;
+        $response['status'] = true;
+        $response['data'] =  $video; 
+        $response['message'] = "video list";
+        return response()->json($response, $this-> successStatus); 
+    }
+    /** 
+     * video Detail api 
+     * 
+     * @return \Illuminate\Http\Response 
+     */ 
+
+    public function video(Request $request) 
+    { 
+        $input = $request->all();
+        $rules = array(
+            'id' => 'required'
+        );
+        $validator = Validator::make($input, $rules);
+
+        if ($validator->fails()) {
+            $response = array("status" => false, "message" => $validator->errors()->first(), "data" => array());
+            return response()->json($response, 200);    
+        } 
+        $video = Video::where('id', $request->id)->get(); 
+        $response['status'] = true;
+        $response['data'] =  $video; 
+        $response['message'] = "video detail";
+        return response()->json($response, $this-> successStatus); 
+    }
      /**
      * Add rating and review Driver.
      *

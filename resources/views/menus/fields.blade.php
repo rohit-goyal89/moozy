@@ -21,14 +21,8 @@
     {{ Form::radio('is_customizable', '0') }} <span>No</span>
 
 </div>
-<!-- Menu IS Customizable Field -->
-<div class="form-group col-sm-6">
-    {!! Form::label('type', 'If Menu Customizable then its single or multi type:') !!}<br>
-    {{ Form::radio('type', '1') }} <span>Single</span> &nbsp;&nbsp;&nbsp;&nbsp;
-    {{ Form::radio('type', '2') }} <span>Multiple</span>
 </div>
-</div>
-<div class="row">
+<!--<div class="row">
     
     <div class="form-group col-sm-4 required"> 
         {!! Form::label('submenu', 'Submenu:') !!}
@@ -41,24 +35,29 @@
     <div class="form-group col-sm-4" style="padding-top: 30px;">
         {!! Form::button('Add', ['class' => 'btn btn-primary add_submenu']) !!}
     </div>
-</div>
-<div class="table-responsive">
-    <table class="table" id="manage_menu_store">
-         <thead>
-            <tr>
-                <th>Submenu</th>
-                <th>Price</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if(!empty($menu['submenus']))
-                @foreach($menu['submenus'] as $key => $submenus)
-                <tr row-id="{{$key}}"><input type="hidden" name="manage_menu[@php echo $key @endphp][name]" value="{{ $submenus->name }}"><input type="hidden" name="manage_menu[{{$key}}][price]" value="{{$submenus->price}}"><td>{{$submenus->name}}</td><td>{{$submenus->price}}</td><td><a href="javascript:void(0)" class="delete_sub_menu" data-id="{{$submenus->id}}"><i class="fa fa-trash" aria-hidden="true"></i></a></td></tr>
+</div>-->
+<?php //dd($attributes) ?>
+<div class="row">
+     <p style="display: block;
+    width: 100%;"><strong>Customize Attribute:</strong></p><br/>
+            @if(!empty($attributes))
+                @foreach($attributes as $value)
+                 <div class="form-group col-sm-2"> 
+                  <label> {{$value->name}} </label>
+                  <input  name="customize_attr[<?php echo $value->id ?>]" type="checkbox">
+                  
+                    @if(!empty($value->attributeValues))
+                        <ul style="list-style: none;">
+                        @foreach($value->attributeValues as $val)
+                        <li>Name: {{$val->name}}</li>
+                        <li>Price: {{$val->price}}</li>
+                        <li>Quanity: {{$val->quantity}}</li>
+                        @endforeach
+                    </ul>
+                    @endif
+                 </div>
                 @endforeach
             @endif
-            
-        </tbody>
-    </table>
 </div> 
 <div class="row">   
 <!-- Menu Field -->

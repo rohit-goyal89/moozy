@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use App\Category;
 use App\Models\Restaurant;
 use App\Models\Menu;
-use App\Models\SubMenu;
+use App\Models\Attribute;
 use Flash;
 use Response;
 
@@ -51,8 +51,9 @@ class MenuController extends AppBaseController
     {
         $categories =  Category::where('status',1)->pluck('category','id');
         $selectedCat = [];
-        $where['status'] = 1;
-        return view('menus.create', compact('categories', 'selectedCat'));
+        $attributes = Attribute::with('attributeValues')->where('status',1)->get();
+         
+        return view('menus.create', compact('categories', 'selectedCat','attributes'));
     }
 
     /**
@@ -90,7 +91,9 @@ class MenuController extends AppBaseController
         if(!empty($request->category)) {
             $menu->categories()->attach($input['category']);
         }
-      
+      if(!empty($request->customize_attr)) {
+            $menu->attributes()->attach(array_keys($request->customize_attr));
+         }
         Flash::success('Menu saved successfully.');
 
         return redirect(route('menus.index'));
@@ -133,8 +136,8 @@ class MenuController extends AppBaseController
         }
         $categories =  Category::where('status',1)->pluck('category','id');
         $selectedCat = $menu->categories()->allRelatedIds();
-        $where['status'] = 1;
-        return view('menus.edit', compact('menu', 'categories', 'selectedCat'));
+        $attributes = Attribute::with('attributeValues')->where('status',1)->get();
+        return view('menus.edit', compact('menu', 'categories', 'selectedCat', 'attributes'));
     }
 
     /**
@@ -171,7 +174,7 @@ class MenuController extends AppBaseController
         }else {
             unset($input['image']);
         }
-        
+
         $menu = $this->menuRepository->update($input, $id);
          if(!empty($request->manage_menu)) {
            $manageMenuModels = [];
@@ -182,7 +185,10 @@ class MenuController extends AppBaseController
             Submenu::where('menu_id',$id)->delete();
             $menu->submenus()->saveMany($manageMenuModels);
         }
-        $menu->categories()->sync($input['category']);
+        if(!empty($request->customize_attr)) {
+            $menu->attributes()->sync(array_keys($request->customize_attr));
+         }
+        
         Flash::success('Menu updated successfully.');
 
         return redirect(route('menus.index'));
